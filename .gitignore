@@ -1,6 +1,7 @@
 # Python
 __pycache__/
 *.py[cod]
+*$py.class
 *.so
 .Python
 env/
@@ -22,24 +23,27 @@ wheels/
 .installed.cfg
 *.egg
 
-# Database
-instance/
-*.db
-*.sqlite
-*.sqlite3
+# Database - COMMENT THESE OUT TO INCLUDE DB
+# instance/
+# *.db
+# *.sqlite
+# *.sqlite3
 
-# Uploads
-static/uploads/*
-!static/uploads/.gitkeep
+# Uploaded images - COMMENT THESE OUT TO INCLUDE IMAGES
+# static/uploads/*
+# !static/uploads/.gitkeep
 
-# Environment
-.env
-.env.local
+# Environment variables - COMMENT THESE OUT TO INCLUDE .env
+# .env
+# .env.local
+# .env.*.local
 
 # IDE
 .vscode/
 .idea/
 *.swp
+*.swo
+*~
 .DS_Store
 
 # Logs
