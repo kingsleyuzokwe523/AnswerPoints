@@ -5,20 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - AnswerPoint</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <style>
+        .sidebar-btn:hover { background: #f3f4f6; }
+        .section-content { transition: all 0.3s ease; }
+        .ql-editor { min-height: 350px; font-size: 16px; line-height: 1.6; background: white; }
+        .ql-editor img { max-width: 100%; margin: 10px 0; cursor: move; }
+        .ql-editor img:active { cursor: grabbing; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; z-index: 1000; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .subject-item:hover { background: #f3f4f6; }
+        .practical-badge { background: #dbeafe; color: #1e40af; font-size: 9px; padding: 2px 6px; border-radius: 10px; }
+        .info-card {
+            border-top: 4px solid #28a745;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .answer-container {
+            border: 1px solid #28a745;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .separator {
+            border: none;
+            border-top: 2px dashed #d1d5db;
+            margin: 20px 0;
+        }
+        .loading-bar {
+            background: #e5e7eb;
+            border-radius: 30px;
+            height: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .loading-progress {
+            background: #28a745;
+            border-radius: 30px;
+            height: 100%;
+            width: 30%;
+            position: relative;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { opacity: 0.5; width: 10%; }
+            50% { opacity: 1; width: 40%; }
+            100% { opacity: 0.5; width: 10%; }
+        }
+        .footer-banner {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 40;
+        }
+        .footer-banner a {
+            color: #25D366;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .footer-banner a:hover {
+            text-decoration: underline;
+        }
+        body {
+            padding-bottom: 70px;
+        }
+        .ql-toolbar {
+            border-radius: 8px 8px 0 0;
+        }
+        .ql-container {
+            border-radius: 0 0 8px 8px;
+            min-height: 300px;
+        }
+        #pinCode::-webkit-inner-spin-button,
+        #pinCode::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        #pinCode {
+            -moz-appearance: textfield;
+        }
+        #pinCode.error {
+            border-color: #dc2626;
+            background-color: #fef2f2;
+        }
+        #pinCode.success {
+            border-color: #28a745;
+            background-color: #f0fdf4;
+            
+        #subjectName {
+    font-size: 10px;
+    font-weight: 400;
+}
+        }
+        #pinCheck.error {
+            color: #dc2626;
+        }
+        #pinCheck.success {
+            color: #28a745;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
 
-<!-- Top Navigation -->
-<nav class="bg-gradient-to-r from-indigo-800 to-purple-800 text-white shadow-lg">
-    <div class="px-6 py-4 flex justify-between items-center">
+<nav class="bg-gradient-to-r from-blue-800 via-blue-700 to-blue-800 text-white shadow-lg sticky top-0 z-50">
+    <div class="px-4 py-3 flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <i class="fas fa-graduation-cap text-2xl"></i>
             <span class="font-bold text-xl">AnswerPoint Admin</span>
         </div>
         <div class="flex items-center space-x-4">
             <span class="text-sm">Welcome, Admin</span>
-            <a href="/admin/logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition">
+            <a href="/admin/logout" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition">
                 <i class="fas fa-sign-out-alt mr-2"></i> Logout
             </a>
         </div>
@@ -27,390 +133,737 @@
 
 <div class="flex">
     <!-- Sidebar -->
-    <div class="w-64 bg-white shadow-lg h-screen sticky top-0">
-        <div class="p-4 space-y-2">
-            <button onclick="showSection('dashboard')" class="sidebar-btn w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-50 transition flex items-center space-x-3">
-                <i class="fas fa-chart-line text-indigo-600"></i>
-                <span>Dashboard</span>
+    <div class="w-80 bg-white shadow-lg h-screen sticky top-14 overflow-y-auto">
+        <div class="p-4 space-y-1">
+            <button onclick="showSection('dashboard')" class="sidebar-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center space-x-3">
+                <i class="fas fa-chart-line w-5 text-blue-600"></i><span>Dashboard</span>
             </button>
-            <button onclick="showSection('create-pin')" class="sidebar-btn w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-50 transition flex items-center space-x-3">
-                <i class="fas fa-plus-circle text-green-600"></i>
-                <span>Create PIN</span>
+            <button onclick="showSection('home-content')" class="sidebar-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center space-x-3">
+                <i class="fas fa-home w-5 text-green-600"></i><span>Edit Home Page</span>
             </button>
-            <button onclick="showSection('manage-pins')" class="sidebar-btn w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-50 transition flex items-center space-x-3">
-                <i class="fas fa-tags text-blue-600"></i>
-                <span>Manage PINs</span>
+            <button onclick="showSection('manage-subjects')" class="sidebar-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center space-x-3">
+                <i class="fas fa-book w-5 text-purple-600"></i><span>Manage Subjects</span>
             </button>
-            <button onclick="showSection('edit-content')" class="sidebar-btn w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-50 transition flex items-center space-x-3">
-                <i class="fas fa-edit text-purple-600"></i>
-                <span>Edit Home Content</span>
+            <button onclick="showSection('create-pin')" class="sidebar-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center space-x-3">
+                <i class="fas fa-plus-circle w-5 text-green-600"></i><span>Create PIN</span>
             </button>
-            <button onclick="showSection('timetable')" class="sidebar-btn w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-50 transition flex items-center space-x-3">
-                <i class="fas fa-calendar-alt text-orange-600"></i>
-                <span>Exam Timetable</span>
+            <button onclick="showSection('manage-pins')" class="sidebar-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center space-x-3">
+                <i class="fas fa-tags w-5 text-orange-600"></i><span>Manage PINs</span>
+            </button>
+            <button onclick="showSection('timetable')" class="sidebar-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center space-x-3">
+                <i class="fas fa-calendar-alt w-5 text-red-600"></i><span>Exam Timetable</span>
+            </button>
+            <button onclick="showSection('site-settings')" class="sidebar-btn w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center space-x-3">
+                <i class="fas fa-cog w-5 text-gray-600"></i><span>Site Settings</span>
             </button>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="flex-1 p-6">
+    <div class="flex-1 p-6 pb-20">
         <!-- Dashboard Section -->
         <div id="dashboard-section" class="section-content">
             <h1 class="text-3xl font-bold mb-6">Dashboard Overview</h1>
             <div class="grid md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-xl p-6 text-white">
-                    <p class="text-sm">Total PINs</p>
-                    <p class="text-3xl font-bold">{{ total_pins }}</p>
-                </div>
-                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
-                    <p class="text-sm">Total Views</p>
-                    <p class="text-3xl font-bold">{{ total_views }}</p>
-                </div>
-                <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
-                    <p class="text-sm">Subjects</p>
-                    <p class="text-3xl font-bold">{{ total_subjects }}</p>
-                </div>
-                <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
-                    <p class="text-sm">Images</p>
-                    <p class="text-3xl font-bold">{{ total_images }}</p>
-                </div>
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white shadow"><p class="text-sm">Total PINs</p><p class="text-3xl font-bold" id="statTotalPins">0</p></div>
+                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white shadow"><p class="text-sm">Active PINs</p><p class="text-3xl font-bold" id="statActivePins">0</p></div>
+                <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white shadow"><p class="text-sm">Total Subjects</p><p class="text-3xl font-bold" id="statTotalSubjects">0</p></div>
+                <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-6 text-white shadow"><p class="text-sm">Total Views</p><p class="text-3xl font-bold" id="statTotalViews">0</p></div>
             </div>
+        </div>
 
-            <div class="bg-white rounded-xl shadow p-6">
-                <h2 class="text-xl font-bold mb-4">Recent PINs</h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-2 text-left">PIN</th>
-                                <th class="px-4 py-2 text-left">Subject</th>
-                                <th class="px-4 py-2 text-left">Exam</th>
-                                <th class="px-4 py-2 text-left">Views</th>
-                                <th class="px-4 py-2 text-left">Created</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for pin in recent_pins %}
-                            <tr class="border-b">
-                                <td class="px-4 py-2 font-mono font-bold text-indigo-600">{{ pin.pin_code }}</td>
-                                <td class="px-4 py-2">{{ pin.subject.name }}</td>
-                                <td class="px-4 py-2">{{ pin.subject.exam_type }}</td>
-                                <td class="px-4 py-2">{{ pin.views }}</td>
-                                <td class="px-4 py-2 text-sm">{{ pin.created_at.strftime('%Y-%m-%d') }}</td>
-                            </tr>
-                            {% else %}
-                            <tr><td colspan="5" class="text-center py-4">No PINs yet. Create your first PIN!</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        <!-- EDIT HOME PAGE CONTENT -->
+        <div id="home-content-section" class="section-content hidden">
+            <h1 class="text-3xl font-bold mb-6">Edit Home Page Content</h1>
+            <div class="grid lg:grid-cols-2 gap-6">
+                <div class="space-y-6">
+                    <div class="bg-white rounded-lg shadow p-6"><h2 class="text-xl font-bold mb-4 border-b pb-2">Hero Section</h2>
+                        <div class="space-y-4"><div><label class="block font-bold mb-2">Hero Title</label><input type="text" id="hero_title" class="w-full px-3 py-2 border rounded"></div>
+                        <div><label class="block font-bold mb-2">Hero Subtitle</label><textarea id="hero_text" rows="3" class="w-full px-3 py-2 border rounded"></textarea></div>
+                        <div><label class="block font-bold mb-2">Moving Tagline</label><input type="text" id="moving_tagline" class="w-full px-3 py-2 border rounded"></div></div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6"><h2 class="text-xl font-bold mb-4 border-b pb-2">Social & VIP</h2>
+                        <div class="space-y-4"><div><label class="block font-bold mb-2">WhatsApp Link</label><input type="url" id="whatsapp_link" class="w-full px-3 py-2 border rounded"></div>
+                        <div><label class="block font-bold mb-2">Telegram Link</label><input type="url" id="telegram_link" class="w-full px-3 py-2 border rounded"></div>
+                        <div><label class="block font-bold mb-2">VIP Text</label><input type="text" id="vip_text" class="w-full px-3 py-2 border rounded"></div>
+                        <div><label class="block font-bold mb-2">VIP Number</label><input type="text" id="vip_number" class="w-full px-3 py-2 border rounded"></div>
+                        <div><label class="block font-bold mb-2">Support Email</label><input type="email" id="support_email" class="w-full px-3 py-2 border rounded"></div></div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6"><h2 class="text-xl font-bold mb-4 border-b pb-2">Footer</h2>
+                        <div><label class="block font-bold mb-2">Footer Text</label><input type="text" id="footer_text" class="w-full px-3 py-2 border rounded"></div>
+                    </div>
+                    <button onclick="saveHomeContent()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg">Save All Changes</button>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6 sticky top-20">
+                    <h2 class="text-xl font-bold mb-4 border-b pb-2">Live Preview</h2>
+                    <div id="livePreview" class="preview-box space-y-4">
+                        <div class="bg-blue-700 p-4 text-white text-center"><h1 id="preview_hero_title" class="text-2xl font-bold">AnswerPoint</h1><p id="preview_hero_text" class="text-sm mt-2"></p></div>
+                        <div class="bg-green-600 p-3 text-white text-center" id="preview_whatsapp">Join WhatsApp</div>
+                        <div class="bg-red-600 p-3 text-white text-center" id="preview_vip"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Create PIN Section -->
+        <!-- MANAGE SUBJECTS SECTION -->
+        <div id="manage-subjects-section" class="section-content hidden">
+            <h1 class="text-3xl font-bold mb-6">Manage Subjects</h1>
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow p-6"><h2 class="text-xl font-bold mb-4 border-b pb-2">Add New Subject</h2>
+                    <form id="addSubjectForm"><div class="space-y-4">
+                        <div><label class="block font-bold mb-2">Subject Name</label><input type="text" name="name" id="newSubjectName" required class="w-full px-3 py-2 border rounded"></div>
+                        <div><label class="block font-bold mb-2">Exam Type</label><select name="exam_type" id="newSubjectExam" class="w-full px-3 py-2 border rounded"><option value="WAEC">WAEC</option><option value="NECO">NECO</option></select></div>
+                        <div><label class="block font-bold mb-2">Icon</label><select name="icon" id="newSubjectIcon" class="w-full px-3 py-2 border rounded"><option value="fa-book">📘 Book</option><option value="fa-flask">🔬 Flask</option><option value="fa-calculator">🧮 Calculator</option></select></div>
+                        <div><label class="flex items-center space-x-2"><input type="checkbox" name="has_practical" id="newSubjectPractical"><span>Has Practical</span></label></div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded font-bold">Add Subject</button>
+                    </div></form>
+                </div>
+                <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">All Subjects</h2><div class="flex gap-2"><input type="text" id="subjectSearch" placeholder="Search..." class="px-3 py-2 border rounded"><select id="examTypeFilter" class="px-3 py-2 border rounded"><option value="all">All</option><option value="WAEC">WAEC</option><option value="NECO">NECO</option></select><button onclick="loadSubjects()" class="bg-blue-600 text-white px-3 py-2 rounded"><i class="fas fa-sync-alt"></i></button></div></div>
+                    <div id="subjectsListContainer" class="max-h-96 overflow-y-auto"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CREATE PIN SECTION - REMOVED LIVE PREVIEW -->
         <div id="create-pin-section" class="section-content hidden">
-            <h1 class="text-3xl font-bold mb-6">Create New PIN</h1>
-            <div class="bg-white rounded-xl shadow p-6">
-                <form id="createPinForm" enctype="multipart/form-data">
-                    <div class="grid md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label class="block font-bold mb-2">PIN Code (3 digits)</label>
-                            <input type="text" name="pin_code" maxlength="3" required
-                                   class="w-full px-4 py-2 border rounded-lg focus:border-indigo-500 focus:outline-none text-center text-2xl font-mono"
-                                   placeholder="123">
-                        </div>
-                        <div>
-                            <label class="block font-bold mb-2">Select Subject</label>
-                            <select name="subject_id" required class="w-full px-4 py-2 border rounded-lg">
-                                <option value="">-- Choose Subject --</option>
-                                {% for subject in all_subjects %}
-                                <option value="{{ subject.id }}">{{ subject.name }} ({{ subject.exam_type }})</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+            <h1 class="text-3xl font-bold mb-6" id="formTitle">Create New PIN</h1>
+            
+            <!-- Info Card -->
+            <div class="info-card bg-white rounded-lg shadow-md p-4 md:p-6 mb-6 md:mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                    <!-- Posted By -->
+                    <div>
+                        <label class="block font-bold mb-2 text-sm md:text-base" style="color: #28a745;">Posted By:</label>
+                        <input type="text" id="postedBy"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm md:text-base"
+                               value="AnswerPoint">
                     </div>
 
-                    <div class="mb-6">
-                        <label class="block font-bold mb-2">Answer Text</label>
-                        <textarea name="answer_text" rows="10" class="w-full px-4 py-2 border rounded-lg" placeholder="Write the answer here..."></textarea>
+                    <!-- Subject -->
+                    <div>
+    <label class="block font-bold mb-2 text-sm md:text-base" style="color: #28a745;">Subject:</label>
+    <input type="text" id="subjectName"
+           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-[8px] md:text-[10px] font-normal text-center"
+           placeholder="e.g., MATHEMATICS" required>
+</div>
+
+                    <!-- PIN Code -->
+                    <div>
+                        <label class="block font-bold mb-2 text-sm md:text-base" style="color: #28a745;">PIN Code:</label>
+                        <input type="text" id="pinCode" maxlength="3"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-xl md:text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               placeholder="123" required>
+                        <div id="pinCheck" class="text-xs mt-1 text-gray-500"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-6">
+                    <!-- Header Color -->
+                    <div>
+                        <label class="block font-bold mb-2 text-sm md:text-base" style="color: #28a745;">Header Color:</label>
+                        <input type="color" id="headerColor" value="#ffffff"
+                               class="w-full h-10 md:h-12 border border-gray-300 rounded cursor-pointer">
                     </div>
 
-                    <div class="mb-6">
-                        <label class="block font-bold mb-2">Upload Images (Optional)</label>
-                        <input type="file" name="images" multiple accept="image/*" class="w-full">
-                        <p class="text-sm text-gray-500 mt-1">You can select multiple images</p>
+                    <!-- Answer Text Color -->
+                    <div>
+                        <label class="block font-bold mb-2 text-sm md:text-base" style="color: #28a745;">Answer Text Color:</label>
+                        <input type="color" id="answerTextColor" value="#1f2937"
+                               class="w-full h-10 md:h-12 border border-gray-300 rounded cursor-pointer">
                     </div>
-
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition">
-                        <i class="fas fa-save mr-2"></i> Create PIN
-                    </button>
-                </form>
-                <div id="createMessage" class="mt-4 hidden"></div>
+                </div>
             </div>
+
+            <!-- Answer Container -->
+            <div class="answer-container bg-white shadow-lg mb-8">
+                <div class="p-4 border-b border-gray-200 bg-gray-50">
+                    <h3 class="font-bold text-lg">Answer Content</h3>
+                    <p class="text-sm text-gray-500">💡 Tip: Use the toolbar below to format text, add colors, and upload images. Images are draggable!</p>
+                </div>
+                <div id="editor" style="min-height: 350px;"></div>
+                <div class="p-4 border-t border-gray-200 bg-gray-50 flex gap-3">
+                    <button type="button" onclick="uploadImage()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg transition flex items-center gap-2">
+                        <i class="fas fa-image"></i> Upload Image
+                    </button>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none" onchange="insertImage()">
+                    <div class="flex items-center gap-2 border rounded-lg px-3 py-1 bg-white">
+                        <span class="text-xs text-gray-600">Text Color:</span>
+                        <button type="button" onclick="applyColor('#ef4444')" class="w-6 h-6 rounded" style="background: #ef4444;"></button>
+                        <button type="button" onclick="applyColor('#3b82f6')" class="w-6 h-6 rounded" style="background: #3b82f6;"></button>
+                        <button type="button" onclick="applyColor('#28a745')" class="w-6 h-6 rounded" style="background: #28a745;"></button>
+                        <button type="button" onclick="applyColor('#f59e0b')" class="w-6 h-6 rounded" style="background: #f59e0b;"></button>
+                        <button type="button" onclick="applyColor('#8b5cf6')" class="w-6 h-6 rounded" style="background: #8b5cf6;"></button>
+                        <button type="button" onclick="applyColor('#000000')" class="w-6 h-6 rounded" style="background: #000000;"></button>
+                        <input type="color" id="customColorPicker" onchange="applyColor(this.value)" class="w-6 h-6 rounded border cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Separator -->
+            <hr class="separator">
+
+            <!-- Loading Area -->
+            <div class="mb-6">
+                <p class="text-center font-bold mb-3" style="color: #dc2626;">🐱 More Answers Loading...</p>
+                <div class="loading-bar">
+                    <div class="loading-progress"></div>
+                </div>
+                <p class="text-center text-gray-400 italic text-sm mt-3">Please refresh this page every few minutes to see new updates.</p>
+            </div>
+
+            <!-- Save Button -->
+            <div class="flex gap-3 justify-end">
+                <button type="submit" id="savePinBtn" onclick="submitPin()" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold text-lg transition shadow-md">
+                    <i class="fas fa-save mr-2"></i> Save PIN
+                </button>
+                <button type="button" onclick="resetForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg font-bold text-lg transition shadow-md">
+                    Cancel
+                </button>
+            </div>
+            <input type="hidden" id="editPinId" value="">
         </div>
 
-        <!-- Manage PINs Section -->
+        <!-- MANAGE PINS SECTION -->
         <div id="manage-pins-section" class="section-content hidden">
             <h1 class="text-3xl font-bold mb-6">Manage PINs</h1>
-            <div class="bg-white rounded-xl shadow p-6">
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-2 text-left">PIN</th>
-                                <th class="px-4 py-2 text-left">Subject</th>
-                                <th class="px-4 py-2 text-left">Exam</th>
-                                <th class="px-4 py-2 text-left">Views</th>
-                                <th class="px-4 py-2 text-left">Images</th>
-                                <th class="px-4 py-2 text-left">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for pin in recent_pins %}
-                            <tr class="border-b">
-                                <td class="px-4 py-2 font-mono font-bold text-indigo-600">{{ pin.pin_code }}</td>
-                                <td class="px-4 py-2">{{ pin.subject.name }}</td>
-                                <td class="px-4 py-2">{{ pin.subject.exam_type }}</td>
-                                <td class="px-4 py-2">{{ pin.views }}</td>
-                                <td class="px-4 py-2">{{ pin.images|length }}</td>
-                                <td class="px-4 py-2">
-                                    <button onclick="editPin({{ pin.id }})" class="text-blue-600 hover:text-blue-800 mr-3">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                    <button onclick="deletePin({{ pin.id }}, '{{ pin.pin_code }}')" class="text-red-600 hover:text-red-800">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr><td colspan="6" class="text-center py-4">No PINs created yet</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <div class="bg-white rounded-lg shadow p-6 overflow-x-auto">
+                <div class="mb-4 flex gap-3">
+                    <input type="text" id="pinSearch" placeholder="Search by PIN or Subject..." class="px-3 py-2 border rounded flex-1">
+                    <button onclick="loadPins()" class="bg-blue-600 text-white px-4 py-2 rounded">Refresh</button>
                 </div>
+                <div id="pinsList"></div>
             </div>
         </div>
 
-        <!-- Edit Content Section -->
-        <div id="edit-content-section" class="section-content hidden">
-            <h1 class="text-3xl font-bold mb-6">Edit Home Page Content</h1>
-            <div class="bg-white rounded-xl shadow p-6">
-                <form id="editContentForm">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block font-bold mb-2">Hero Title</label>
-                            <input type="text" name="hero_title" id="hero_title" class="w-full px-4 py-2 border rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block font-bold mb-2">Hero Text</label>
-                            <textarea name="hero_text" id="hero_text" rows="3" class="w-full px-4 py-2 border rounded-lg"></textarea>
-                        </div>
-                        <div>
-                            <label class="block font-bold mb-2">Announcement</label>
-                            <input type="text" name="announcement" id="announcement" class="w-full px-4 py-2 border rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block font-bold mb-2">Instructions</label>
-                            <textarea name="instructions" id="instructions" rows="5" class="w-full px-4 py-2 border rounded-lg"></textarea>
-                        </div>
-                        <div>
-                            <label class="block font-bold mb-2">WhatsApp Link</label>
-                            <input type="url" name="whatsapp_link" id="whatsapp_link" class="w-full px-4 py-2 border rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block font-bold mb-2">Telegram Link</label>
-                            <input type="url" name="telegram_link" id="telegram_link" class="w-full px-4 py-2 border rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block font-bold mb-2">Footer Text</label>
-                            <input type="text" name="footer_text" id="footer_text" class="w-full px-4 py-2 border rounded-lg">
-                        </div>
-                    </div>
-                    <button type="submit" class="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition">
-                        <i class="fas fa-save mr-2"></i> Save Changes
-                    </button>
-                </form>
-                <div id="editMessage" class="mt-4 hidden"></div>
-            </div>
-        </div>
-
-        <!-- Timetable Section (Admin Only) -->
+        <!-- EXAM TIMETABLE -->
         <div id="timetable-section" class="section-content hidden">
-            <h1 class="text-3xl font-bold mb-6">Exam Timetable Management</h1>
-            <div class="bg-white rounded-xl shadow p-6 mb-6">
-                <h2 class="text-xl font-bold mb-4">Add New Exam Entry</h2>
-                <form id="addTimetableForm">
-                    <div class="grid md:grid-cols-3 gap-4">
-                        <select name="exam_type" required class="px-4 py-2 border rounded-lg">
-                            <option value="WAEC">WAEC</option>
-                            <option value="NECO">NECO</option>
-                        </select>
-                        <input type="text" name="subject" placeholder="Subject" required class="px-4 py-2 border rounded-lg">
-                        <input type="text" name="paper" placeholder="Paper" class="px-4 py-2 border rounded-lg">
-                        <input type="text" name="date" placeholder="Date (e.g., May 15th, 2026)" required class="px-4 py-2 border rounded-lg">
-                        <input type="text" name="time" placeholder="Time (e.g., 9:00 AM - 1:00 PM)" required class="px-4 py-2 border rounded-lg">
-                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Add Entry</button>
-                    </div>
-                </form>
+            <h1 class="text-3xl font-bold mb-6">Exam Timetable</h1>
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="mb-4"><label class="block font-bold text-lg mb-2">WAEC Timetable</label><textarea id="waecTimetableText" rows="12" class="w-full px-3 py-2 border rounded font-mono text-sm"></textarea></div>
+                <div class="mb-4"><label class="block font-bold text-lg mb-2">NECO Timetable</label><textarea id="necoTimetableText" rows="12" class="w-full px-3 py-2 border rounded font-mono text-sm"></textarea></div>
+                <button onclick="saveTimetable()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">Save Timetable</button>
             </div>
+        </div>
 
-            <div class="bg-white rounded-xl shadow p-6">
-                <h2 class="text-xl font-bold mb-4">Existing Timetable</h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-2 text-left">Exam</th>
-                                <th class="px-4 py-2 text-left">Subject</th>
-                                <th class="px-4 py-2 text-left">Paper</th>
-                                <th class="px-4 py-2 text-left">Date</th>
-                                <th class="px-4 py-2 text-left">Time</th>
-                                <th class="px-4 py-2 text-left">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="timetableBody">
-                            {% for entry in timetable_entries %}
-                            <tr class="border-b">
-                                <td class="px-4 py-2">{{ entry.exam_type }}</td>
-                                <td class="px-4 py-2">{{ entry.subject }}</td>
-                                <td class="px-4 py-2">{{ entry.paper or '-' }}</td>
-                                <td class="px-4 py-2">{{ entry.date }}</td>
-                                <td class="px-4 py-2">{{ entry.time }}</td>
-                                <td class="px-4 py-2">
-                                    <button onclick="deleteTimetable({{ entry.id }})" class="text-red-600 hover:text-red-800">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        <!-- SITE SETTINGS -->
+        <div id="site-settings-section" class="section-content hidden">
+            <h1 class="text-3xl font-bold mb-6">Site Settings</h1>
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div><label class="block font-bold mb-2">Site Name</label><input type="text" id="site_name" class="w-full px-3 py-2 border rounded"></div>
+                    <div><label class="block font-bold mb-2">Admin Email</label><input type="email" id="admin_email" class="w-full px-3 py-2 border rounded"></div>
                 </div>
+                <div class="mt-6"><button onclick="saveSiteSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">Save Settings</button></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Edit Modal -->
-<div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-    <div class="bg-white rounded-xl p-6 max-w-2xl w-full">
-        <h2 class="text-2xl font-bold mb-4">Edit PIN Answer</h2>
-        <form id="editPinForm">
-            <input type="hidden" id="editPinId">
-            <textarea id="editAnswerText" rows="10" class="w-full px-4 py-2 border rounded-lg mb-4"></textarea>
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Save</button>
-            </div>
-        </form>
+<!-- Footer Banner -->
+<div class="footer-banner">
+    <div class="container mx-auto">
+        <p class="text-sm">
+            <i class="fab fa-whatsapp mr-2"></i>
+            <strong>Join our WhatsApp Channel:</strong>
+            <a href="#" id="footerWhatsAppLink" target="_blank">Click Here for Instant Updates</a>
+            | <i class="fab fa-telegram mr-1"></i>
+            <strong>Telegram:</strong>
+            <a href="#" id="footerTelegramLink" target="_blank">Join Telegram</a>
+        </p>
+    </div>
+</div>
+
+<!-- Edit Subject Modal -->
+<div id="editSubjectModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+        <h2 class="text-2xl font-bold mb-4">Edit Subject</h2>
+        <input type="hidden" id="editSubjectId">
+        <div class="space-y-4">
+            <div><label class="block font-bold mb-2">Subject Name</label><input type="text" id="editSubjectName" class="w-full px-3 py-2 border rounded"></div>
+            <div><label class="block font-bold mb-2">Icon</label><select id="editSubjectIcon" class="w-full px-3 py-2 border rounded"><option value="fa-book">📘 Book</option><option value="fa-flask">🔬 Flask</option><option value="fa-calculator">🧮 Calculator</option></select></div>
+            <div><label class="flex items-center space-x-2"><input type="checkbox" id="editSubjectPractical"><span>Has Practical</span></label></div>
+            <div><label class="block font-bold mb-2">Exam Type</label><select id="editSubjectExam" class="w-full px-3 py-2 border rounded"><option value="WAEC">WAEC</option><option value="NECO">NECO</option></select></div>
+        </div>
+        <div class="flex justify-end space-x-3 mt-6"><button onclick="closeEditSubjectModal()" class="px-4 py-2 bg-gray-300 rounded">Cancel</button><button onclick="updateSubject()" class="px-4 py-2 bg-blue-600 text-white rounded">Save Changes</button></div>
     </div>
 </div>
 
 <script>
-let currentEditId = null;
+let quillEditor = null;
+let allSubjects = [];
+
+// ==================== INITIALIZE EDITOR ====================
+function initEditor() {
+    if (quillEditor) return;
+
+    quillEditor = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: 'Write your answer here. You can drag and drop images to reposition them!',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ 'color': [] }],
+                [{ 'align': [] }],
+                ['image', 'clean']
+            ]
+        }
+    });
+
+    // Make images draggable
+    quillEditor.on('text-change', function() {
+        setTimeout(makeImagesDraggable, 100);
+    });
+
+    setTimeout(makeImagesDraggable, 500);
+}
+
+function makeImagesDraggable() {
+    const editorContent = document.querySelector('#editor .ql-editor');
+    if (!editorContent) return;
+
+    const images = editorContent.querySelectorAll('img');
+    let draggedImage = null;
+
+    images.forEach(img => {
+        img.setAttribute('draggable', 'true');
+        img.style.cursor = 'grab';
+        img.style.userSelect = 'none';
+
+        img.removeEventListener('dragstart', handleDragStart);
+        img.removeEventListener('dragend', handleDragEnd);
+        img.removeEventListener('dragover', handleDragOver);
+        img.removeEventListener('drop', handleDrop);
+
+        img.addEventListener('dragstart', handleDragStart);
+        img.addEventListener('dragend', handleDragEnd);
+        img.addEventListener('dragover', handleDragOver);
+        img.addEventListener('drop', handleDrop);
+    });
+
+    function handleDragStart(e) {
+        draggedImage = this;
+        this.style.opacity = '0.5';
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.outerHTML);
+    }
+
+    function handleDragEnd(e) {
+        this.style.opacity = '1';
+        draggedImage = null;
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        if (!draggedImage || draggedImage === this) return;
+
+        const parent = this.parentNode;
+        const draggedParent = draggedImage.parentNode;
+        const temp = document.createElement('span');
+
+        parent.insertBefore(temp, this);
+        draggedParent.insertBefore(this, draggedImage);
+        parent.insertBefore(draggedImage, temp);
+        parent.removeChild(temp);
+
+        const html = parent.innerHTML;
+        if (quillEditor) {
+            quillEditor.root.innerHTML = editorContent.innerHTML;
+            setTimeout(makeImagesDraggable, 100);
+        }
+    }
+}
+
+function uploadImage() {
+    const input = document.getElementById('imageInput');
+    input.click();
+}
+
+function insertImage() {
+    const input = document.getElementById('imageInput');
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const range = quillEditor.getSelection(true);
+        quillEditor.insertEmbed(range.index, 'image', e.target.result);
+        setTimeout(makeImagesDraggable, 100);
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+}
+
+function applyColor(color) {
+    if (quillEditor) {
+        const range = quillEditor.getSelection();
+        if (range && range.length > 0) {
+            quillEditor.format('color', color);
+        } else {
+            alert('Please highlight some text first');
+        }
+    }
+}
+
+// ==================== SUBMIT PIN ====================
+function submitPin() {
+    const pinCode = document.getElementById('pinCode').value.trim();
+    const subjectName = document.getElementById('subjectName').value.trim();
+    const postedBy = document.getElementById('postedBy').value.trim();
+    const headerColor = document.getElementById('headerColor').value;
+    const answerTextColor = document.getElementById('answerTextColor').value;
+    const answerHtml = quillEditor ? quillEditor.root.innerHTML : '';
+    const currentId = document.getElementById('editPinId').value;
+
+    if (!pinCode || pinCode.length !== 3) {
+        alert('❌ Please enter a valid 3-digit PIN');
+        return;
+    }
+    if (!subjectName) {
+        alert('❌ Please enter a subject name');
+        return;
+    }
+    if (!answerHtml || answerHtml === '<p><br></p>') {
+        alert('❌ Please enter answer content');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('pin_code', pinCode);
+    formData.append('subject_name', subjectName);
+    formData.append('posted_by', postedBy);
+    formData.append('header_color', headerColor);
+    formData.append('answer_text_color', answerTextColor);
+    formData.append('answer_text', answerHtml);
+
+    const saveBtn = document.getElementById('savePinBtn');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+    saveBtn.disabled = true;
+
+    let url = '/admin/create_pin_simple';
+    if (currentId) {
+        formData.append('pin_id', currentId);
+        url = '/admin/update_pin_full';
+    }
+
+    fetch(url, { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+
+            if (data.success) {
+                showToast(currentId ? 'PIN updated successfully!' : 'PIN created successfully!');
+                resetForm();
+                loadPins();
+                showSection('manage-pins');
+            } else {
+                alert('Error: ' + (data.message || 'Something went wrong'));
+            }
+        })
+        .catch(error => {
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+            console.error('Error:', error);
+            alert('Network error. Please try again.');
+        });
+}
+
+// ==================== HOME CONTENT ====================
+function loadHomeContent() {
+    fetch('/admin/get_home_content').then(res => res.json()).then(data => {
+        document.getElementById('hero_title').value = data.hero_title || '';
+        document.getElementById('hero_text').value = data.hero_text || '';
+        document.getElementById('moving_tagline').value = data.moving_tagline || '';
+        document.getElementById('whatsapp_link').value = data.whatsapp_link || '';
+        document.getElementById('telegram_link').value = data.telegram_link || '';
+        document.getElementById('vip_text').value = data.vip_text || '';
+        document.getElementById('vip_number').value = data.vip_number || '';
+        document.getElementById('support_email').value = data.support_email || '';
+        document.getElementById('footer_text').value = data.footer_text || '';
+        updatePreview();
+
+        if (data.whatsapp_link) {
+            document.getElementById('footerWhatsAppLink').href = data.whatsapp_link;
+        }
+        if (data.telegram_link) {
+            document.getElementById('footerTelegramLink').href = data.telegram_link;
+        }
+    });
+}
+
+function updatePreview() {
+    document.getElementById('preview_hero_title').innerText = document.getElementById('hero_title').value || 'AnswerPoint';
+    document.getElementById('preview_hero_text').innerText = document.getElementById('hero_text').value || '';
+    document.getElementById('preview_whatsapp').innerHTML = '<i class="fab fa-whatsapp mr-2"></i>' + (document.getElementById('whatsapp_link').value ? 'Join WhatsApp' : 'WhatsApp');
+    document.getElementById('preview_vip').innerHTML = (document.getElementById('vip_text').value || 'VIP') + ' <strong>' + document.getElementById('vip_number').value + '</strong>';
+}
+
+function saveHomeContent() {
+    const data = {
+        hero_title: document.getElementById('hero_title').value,
+        hero_text: document.getElementById('hero_text').value,
+        moving_tagline: document.getElementById('moving_tagline').value,
+        whatsapp_link: document.getElementById('whatsapp_link').value,
+        telegram_link: document.getElementById('telegram_link').value,
+        vip_text: document.getElementById('vip_text').value,
+        vip_number: document.getElementById('vip_number').value,
+        support_email: document.getElementById('support_email').value,
+        footer_text: document.getElementById('footer_text').value
+    };
+    fetch('/admin/update_home_content', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        .then(() => {
+            showToast('Home content saved!');
+            loadHomeContent();
+        });
+}
+
+// ==================== SUBJECTS MANAGEMENT ====================
+function loadSubjects() {
+    fetch('/admin/get_subjects').then(res => res.json()).then(data => {
+        allSubjects = data;
+        displaySubjects();
+    });
+}
+
+function displaySubjects() {
+    const search = document.getElementById('subjectSearch')?.value.toLowerCase() || '';
+    const examFilter = document.getElementById('examTypeFilter')?.value || 'all';
+    let filtered = allSubjects;
+    if (search) filtered = filtered.filter(s => s.name.toLowerCase().includes(search));
+    if (examFilter !== 'all') filtered = filtered.filter(s => s.exam_type === examFilter);
+
+    const container = document.getElementById('subjectsListContainer');
+    if (!filtered.length) { container.innerHTML = '<div class="text-gray-400 text-center py-8">No subjects found</div>'; return; }
+    container.innerHTML = filtered.map(s => `
+        <div class="subject-item flex justify-between items-center p-3 border-b hover:bg-gray-50">
+            <div class="flex items-center gap-3"><i class="fas ${s.icon} text-blue-600 w-5"></i><span class="font-medium">${escapeHtml(s.name)}</span><span class="text-xs px-2 py-0.5 rounded ${s.exam_type === 'WAEC' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}">${s.exam_type}</span>${s.has_practical ? '<span class="practical-badge ml-1">Practical</span>' : ''}${s.pin_count > 0 ? `<span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded ml-1">${s.pin_count} PIN(s)</span>` : ''}</div>
+            <div><button onclick="openEditSubjectModal(${s.id}, '${escapeHtml(s.name)}', '${s.icon}', ${s.has_practical}, '${s.exam_type}')" class="text-blue-600 mr-3"><i class="fas fa-edit"></i> Edit</button><button onclick="deleteSubject(${s.id}, '${escapeHtml(s.name)}', ${s.pin_count || 0})" class="text-red-600"><i class="fas fa-trash"></i> Delete</button></div>
+        </div>
+    `).join('');
+}
+
+function openEditSubjectModal(id, name, icon, hasPractical, examType) {
+    document.getElementById('editSubjectId').value = id;
+    document.getElementById('editSubjectName').value = name;
+    document.getElementById('editSubjectIcon').value = icon;
+    document.getElementById('editSubjectPractical').checked = hasPractical;
+    document.getElementById('editSubjectExam').value = examType;
+    document.getElementById('editSubjectModal').classList.remove('hidden');
+}
+
+function closeEditSubjectModal() { document.getElementById('editSubjectModal').classList.add('hidden'); }
+
+function updateSubject() {
+    const id = document.getElementById('editSubjectId').value;
+    const name = document.getElementById('editSubjectName').value;
+    const icon = document.getElementById('editSubjectIcon').value;
+    const hasPractical = document.getElementById('editSubjectPractical').checked;
+    const examType = document.getElementById('editSubjectExam').value;
+    fetch(`/admin/update_subject/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `name=${encodeURIComponent(name)}&icon=${icon}&has_practical=${hasPractical}&exam_type=${examType}`
+    }).then(res => res.json()).then(data => {
+        if (data.success) {
+            closeEditSubjectModal();
+            loadSubjects();
+            showToast('Subject updated!');
+        }
+    });
+}
+
+function deleteSubject(id, name, pinCount) {
+    let msg = `Delete subject "${name}"?`;
+    if (pinCount > 0) msg = `⚠️ WARNING: This subject has ${pinCount} PIN(s). Continue?`;
+    if (confirm(msg)) {
+        fetch(`/admin/delete_subject/${id}`, { method: 'POST' }).then(() => {
+            loadSubjects();
+            showToast('Subject deleted');
+        });
+    }
+}
+
+document.getElementById('addSubjectForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch('/admin/add_subject', { method: 'POST', body: formData }).then(res => res.json()).then(data => {
+        if (data.success) {
+            this.reset();
+            loadSubjects();
+            showToast('Subject added!');
+        }
+    });
+});
+
+// ==================== PIN MANAGEMENT ====================
+function checkPin() {
+    const pin = document.getElementById('pinCode').value;
+    const currentId = document.getElementById('editPinId').value;
+    if (pin.length === 3 && !currentId) {
+        fetch(`/admin/check_pin/${pin}`).then(res => res.json()).then(data => {
+            document.getElementById('pinCheck').innerHTML = data.exists ? '<span class="text-red-600">❌ PIN exists!</span>' : '<span class="text-green-600">✅ Available</span>';
+        });
+    } else if (currentId) {
+        document.getElementById('pinCheck').innerHTML = '<span class="text-gray-500">🔒 PIN locked (edit mode)</span>';
+    } else {
+        document.getElementById('pinCheck').innerHTML = '';
+    }
+}
+
+document.getElementById('pinCode')?.addEventListener('input', function() { checkPin(); });
+document.getElementById('subjectName')?.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+document.getElementById('pinCode')?.addEventListener('input', function(e) { this.value = this.value.replace(/[^0-9]/g, ''); });
+
+function loadPins() {
+    fetch('/admin/get_all_pins').then(res => res.json()).then(data => {
+        const search = document.getElementById('pinSearch')?.value.toLowerCase() || '';
+        let filtered = data;
+        if (search) filtered = data.filter(p => p.pin_code.includes(search) || (p.subject_name && p.subject_name.toLowerCase().includes(search)));
+
+        document.getElementById('pinsList').innerHTML = `
+            <table class="w-full border">
+                <thead class="bg-gray-50"><tr><th class="px-4 py-3">Status</th><th class="px-4 py-3">PIN</th><th class="px-4 py-3">Subject</th><th class="px-4 py-3">Views</th><th class="px-4 py-3">Actions</th></tr></thead>
+                <tbody>${filtered.map(p => `<tr class="border-b"><td class="px-4 py-3"><button onclick="togglePinStatus(${p.id}, ${p.is_active})" class="eye-btn"><i class="fas ${p.is_active ? 'fa-eye' : 'fa-eye-slash'} ${p.is_active ? 'eye-active' : 'eye-inactive'}"></i></button></td><td class="px-4 py-3 font-bold text-blue-600">${p.pin_code}</td><td class="px-4 py-3">${escapeHtml(p.subject_name)}</td><td class="px-4 py-3 text-center">${p.views}</td><td class="px-4 py-3"><button onclick="editPin(${p.id})" class="text-blue-600 mr-3"><i class="fas fa-edit"></i> Edit</button><button onclick="deletePin(${p.id}, '${p.pin_code}')" class="text-red-600"><i class="fas fa-trash"></i> Delete</button></td></tr>`).join('')}</tbody>
+            </table>
+        `;
+
+        document.getElementById('statTotalPins').innerText = data.length;
+        document.getElementById('statActivePins').innerText = data.filter(p => p.is_active).length;
+        document.getElementById('statTotalSubjects').innerText = allSubjects.length;
+        document.getElementById('statTotalViews').innerText = data.reduce((sum, p) => sum + (p.views || 0), 0);
+    });
+}
+
+function togglePinStatus(id, currentStatus) {
+    fetch(`/admin/toggle_pin/${id}`, { method: 'POST' }).then(res => res.json()).then(data => {
+        if (data.success) { showToast(data.message); loadPins(); }
+    });
+}
+
+function editPin(id) {
+    document.getElementById('editPinId').value = id;
+    document.getElementById('formTitle').innerHTML = 'Edit PIN';
+    document.getElementById('pinCode').disabled = true;
+
+    fetch(`/admin/get_pin_answer/${id}`).then(res => res.json()).then(data => {
+        if (data.success) {
+            document.getElementById('pinCode').value = data.pin_code || '';
+            document.getElementById('subjectName').value = data.subject_name || '';
+            document.getElementById('postedBy').value = data.posted_by || 'AnswerPoint';
+            document.getElementById('headerColor').value = data.header_color || '#ffffff';
+            document.getElementById('answerTextColor').value = data.answer_text_color || '#1f2937';
+            if (quillEditor) {
+                quillEditor.root.innerHTML = data.answer_text || '';
+                setTimeout(makeImagesDraggable, 200);
+            }
+        }
+    });
+    showSection('create-pin');
+}
+
+function resetForm() {
+    document.getElementById('editPinId').value = '';
+    document.getElementById('formTitle').innerHTML = 'Create New PIN';
+    document.getElementById('pinCode').value = '';
+    document.getElementById('pinCode').disabled = false;
+    document.getElementById('subjectName').value = '';
+    document.getElementById('postedBy').value = 'AnswerPoint';
+    document.getElementById('headerColor').value = '#ffffff';
+    document.getElementById('answerTextColor').value = '#1f2937';
+    document.getElementById('pinCheck').innerHTML = '';
+    if (quillEditor) quillEditor.root.innerHTML = '';
+}
+
+function deletePin(id, pin) {
+    if (confirm(`Delete PIN ${pin}?`))
+        fetch(`/admin/delete_pin/${id}`, { method: 'POST' }).then(() => { loadPins(); showToast('PIN deleted'); });
+}
+
+function loadTimetable() {
+    fetch('/admin/get_timetable_text').then(res => res.json()).then(data => {
+        document.getElementById('waecTimetableText').value = data.waec || '';
+        document.getElementById('necoTimetableText').value = data.neco || '';
+    });
+}
+
+function saveTimetable() {
+    fetch('/admin/save_timetable_text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            waec: document.getElementById('waecTimetableText').value,
+            neco: document.getElementById('necoTimetableText').value
+        })
+    }).then(() => showToast('Timetable saved!'));
+}
+
+function loadSiteSettings() {
+    fetch('/admin/get_site_settings').then(res => res.json()).then(data => {
+        document.getElementById('site_name').value = data.site_name || 'AnswerPoint';
+        document.getElementById('admin_email').value = data.admin_email || '';
+    });
+}
+
+function saveSiteSettings() {
+    fetch('/admin/update_site_settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            site_name: document.getElementById('site_name').value,
+            admin_email: document.getElementById('admin_email').value
+        })
+    }).then(() => showToast('Settings saved!'));
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 function showSection(section) {
     document.querySelectorAll('.section-content').forEach(el => el.classList.add('hidden'));
     document.getElementById(`${section}-section`).classList.remove('hidden');
-}
-
-function loadHomeContent() {
-    fetch('/admin/get_home_content')
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('hero_title').value = data.hero_title || '';
-            document.getElementById('hero_text').value = data.hero_text || '';
-            document.getElementById('announcement').value = data.announcement || '';
-            document.getElementById('instructions').value = data.instructions || '';
-            document.getElementById('whatsapp_link').value = data.whatsapp_link || '';
-            document.getElementById('telegram_link').value = data.telegram_link || '';
-            document.getElementById('footer_text').value = data.footer_text || '';
-        });
-}
-
-// Create PIN
-document.getElementById('createPinForm')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    fetch('/admin/create_pin', { method: 'POST', body: formData })
-        .then(res => res.json())
-        .then(data => {
-            const msg = document.getElementById('createMessage');
-            if (data.success) {
-                msg.className = 'mt-4 p-3 bg-green-100 text-green-700 rounded-lg';
-                msg.innerHTML = '✅ ' + data.message;
-                msg.classList.remove('hidden');
-                setTimeout(() => location.reload(), 1500);
-            } else {
-                msg.className = 'mt-4 p-3 bg-red-100 text-red-700 rounded-lg';
-                msg.innerHTML = '❌ ' + data.error;
-                msg.classList.remove('hidden');
-            }
-        });
-});
-
-// Edit Content
-document.getElementById('editContentForm')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    fetch('/admin/update_content', { method: 'POST', body: formData })
-        .then(res => res.json())
-        .then(data => {
-            const msg = document.getElementById('editMessage');
-            msg.className = 'mt-4 p-3 bg-green-100 text-green-700 rounded-lg';
-            msg.innerHTML = '✅ ' + data.message;
-            msg.classList.remove('hidden');
-            setTimeout(() => msg.classList.add('hidden'), 3000);
-        });
-});
-
-function editPin(id) {
-    currentEditId = id;
-    fetch(`/admin/get_pin/${id}`)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('editAnswerText').value = data.answer_text || '';
-            document.getElementById('editModal').classList.remove('hidden');
-        });
-}
-
-function closeEditModal() {
-    document.getElementById('editModal').classList.add('hidden');
-}
-
-document.getElementById('editPinForm')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const answer = document.getElementById('editAnswerText').value;
-    fetch(`/admin/update_pin/${currentEditId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'answer_text=' + encodeURIComponent(answer)
-    }).then(() => { closeEditModal(); location.reload(); });
-});
-
-function deletePin(id, pin) {
-    if (confirm(`Delete PIN ${pin}?`)) {
-        fetch(`/admin/delete_pin/${id}`, { method: 'POST' })
-            .then(() => location.reload());
+    if (section === 'create-pin') {
+        initEditor();
     }
+    if (section === 'manage-pins') loadPins();
+    if (section === 'home-content') loadHomeContent();
+    if (section === 'manage-subjects') loadSubjects();
+    if (section === 'timetable') loadTimetable();
+    if (section === 'site-settings') loadSiteSettings();
+    if (section === 'dashboard') { loadPins(); loadSubjects(); }
 }
 
-function deleteTimetable(id) {
-    if (confirm('Delete this timetable entry?')) {
-        fetch(`/admin/delete_timetable/${id}`, { method: 'POST' })
-            .then(() => location.reload());
-    }
-}
+// Event Listeners
+document.getElementById('subjectSearch')?.addEventListener('input', displaySubjects);
+document.getElementById('examTypeFilter')?.addEventListener('change', displaySubjects);
+document.getElementById('hero_title')?.addEventListener('input', updatePreview);
+document.getElementById('hero_text')?.addEventListener('input', updatePreview);
+document.getElementById('whatsapp_link')?.addEventListener('input', updatePreview);
+document.getElementById('telegram_link')?.addEventListener('input', updatePreview);
+document.getElementById('vip_text')?.addEventListener('input', updatePreview);
+document.getElementById('vip_number')?.addEventListener('input', updatePreview);
+document.getElementById('pinSearch')?.addEventListener('input', loadPins);
 
-document.getElementById('addTimetableForm')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    fetch('/admin/add_timetable', { method: 'POST', body: formData })
-        .then(() => location.reload());
-});
-
-// Load content on page load
-loadHomeContent();
+// Initialize
+initEditor();
 showSection('dashboard');
 </script>
 </body>

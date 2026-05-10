@@ -1,294 +1,528 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
+from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for
 from app import db
-from app.models import Admin, Subject, Pin, Image, HomeContent, ExamTimetable
-from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
+from app.models import Subject, Pin, Image, HomeContent, SiteSettings
+from functools import wraps
 import os
-from datetime import datetime
+import time
+import re
+from werkzeug.utils import secure_filename
+from sqlalchemy import func
+import base64
+import uuid
 
-admin_bp = Blueprint('admin', __name__)
+admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 
-# Admin login required decorator
-def login_required(f):
-    def wrapper(*args, **kwargs):
+# Admin required decorator
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
         if not session.get('admin_logged_in'):
+            if request.is_json:
+                return jsonify({'error': 'Unauthorized'}), 401
             return redirect(url_for('admin.login'))
         return f(*args, **kwargs)
-
-    wrapper.__name__ = f.__name__
-    return wrapper
+    return decorated_function
 
 
+# ==================== ADMIN LOGIN ====================
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """Admin login page"""
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-
-        admin = Admin.query.filter_by(username=username).first()
-
-        if admin and check_password_hash(admin.password, password):
+        if username == 'admin' and password == 'admin123':
             session['admin_logged_in'] = True
-            session['admin_id'] = admin.id
             return redirect(url_for('admin.dashboard'))
-        else:
-            return render_template('admin_login.html', error='Invalid credentials')
-
+        return render_template('admin_login.html', error='Invalid credentials')
     return render_template('admin_login.html')
 
 
 @admin_bp.route('/logout')
 def logout():
-    """Admin logout"""
-    session.clear()
+    session.pop('admin_logged_in', None)
     return redirect(url_for('admin.login'))
 
 
+# ==================== ADMIN DASHBOARD ====================
 @admin_bp.route('/dashboard')
-@login_required
+@admin_required
 def dashboard():
-    """Admin dashboard"""
-    total_pins = Pin.query.count()
-    total_views = db.session.query(db.func.sum(Pin.views)).scalar() or 0
-    total_subjects = Subject.query.count()
-    total_images = Image.query.count()
-
-    popular_pins = Pin.query.order_by(Pin.views.desc()).limit(5).all()
-    recent_pins = Pin.query.order_by(Pin.created_at.desc()).limit(10).all()
-
-    subjects_with_pins = db.session.query(
-        Subject.name,
-        Subject.exam_type,
-        db.func.count(Pin.id).label('pin_count'),
-        db.func.sum(Pin.views).label('total_views')
-    ).outerjoin(Pin).group_by(Subject.id).order_by(db.func.count(Pin.id).desc()).all()
-
-    all_subjects = Subject.query.order_by(Subject.name).all()
-    timetable_entries = ExamTimetable.query.order_by(ExamTimetable.date).all()
-
-    return render_template('admin_dashboard.html',
-                           total_pins=total_pins,
-                           total_views=total_views,
-                           total_subjects=total_subjects,
-                           total_images=total_images,
-                           popular_pins=popular_pins,
-                           recent_pins=recent_pins,
-                           subjects_with_pins=subjects_with_pins,
-                           all_subjects=all_subjects,
-                           timetable_entries=timetable_entries)
+    return render_template('admin_dashboard.html')
 
 
-@admin_bp.route('/create_pin', methods=['POST'])
-@login_required
-def create_pin():
-    """Create a new PIN with text and images"""
-    pin_code = request.form.get('pin_code', '').strip()
-    subject_id = request.form.get('subject_id')
-    answer_text = request.form.get('answer_text', '')
-
-    # Validate PIN
-    if not pin_code or len(pin_code) != 3 or not pin_code.isdigit():
-        return jsonify({'success': False, 'error': 'PIN must be a 3-digit number (000-999)'})
-
-    # Check if PIN exists
-    existing = Pin.query.filter_by(pin_code=pin_code).first()
-    if existing:
-        return jsonify({'success': False, 'error': f'PIN {pin_code} already exists! Please use a different PIN.'})
-
-    # Create PIN
-    pin = Pin(pin_code=pin_code, subject_id=subject_id, answer_text=answer_text)
-    db.session.add(pin)
-    db.session.commit()
-
-    # Handle image uploads
-    if 'images' in request.files:
-        files = request.files.getlist('images')
-        for file in files:
-            if file and file.filename:
-                filename = secure_filename(f"{pin.id}_{datetime.now().timestamp()}_{file.filename}")
-                filepath = os.path.join('uploads', filename)
-                full_path = os.path.join('static', filepath)
-                file.save(full_path)
-
-                image = Image(pin_id=pin.id, image_path=filepath)
-                db.session.add(image)
-
-        db.session.commit()
-
-    return jsonify({'success': True, 'message': f'PIN {pin_code} created successfully for {pin.subject.name}!'})
+@admin_bp.route('/')
+@admin_required
+def index():
+    return render_template('admin_dashboard.html')
 
 
-@admin_bp.route('/get_pin/<int:pin_id>', methods=['GET'])
-@login_required
-def get_pin(pin_id):
-    """Get PIN details for editing"""
-    pin = Pin.query.get_or_404(pin_id)
-    return jsonify({
-        'answer_text': pin.answer_text or '',
-        'pin_code': pin.pin_code,
-        'subject_id': pin.subject_id,
-        'views': pin.views
-    })
-
-
-@admin_bp.route('/update_pin/<int:pin_id>', methods=['POST'])
-@login_required
-def update_pin(pin_id):
-    """Update existing PIN answer text"""
-    pin = Pin.query.get_or_404(pin_id)
-    pin.answer_text = request.form.get('answer_text', '')
-    db.session.commit()
-
-    return jsonify({'success': True, 'message': 'PIN updated successfully'})
-
-
-@admin_bp.route('/delete_pin/<int:pin_id>', methods=['POST'])
-@login_required
-def delete_pin(pin_id):
-    """Delete a PIN and its images"""
-    pin = Pin.query.get_or_404(pin_id)
-
-    # Delete image files
-    for image in pin.images:
-        filepath = os.path.join('static', image.image_path)
-        if os.path.exists(filepath):
-            os.remove(filepath)
-
-    db.session.delete(pin)
-    db.session.commit()
-
-    return jsonify({'success': True, 'message': 'PIN deleted successfully'})
-
-
-@admin_bp.route('/bulk_create_pins', methods=['POST'])
-@login_required
-def bulk_create_pins():
-    """Create multiple PINs at once for the same subject"""
-    subject_id = request.form.get('subject_id')
-    answer_text = request.form.get('answer_text', '')
-    pin_range_start = int(request.form.get('pin_range_start'))
-    pin_range_end = int(request.form.get('pin_range_end'))
-
-    created = 0
-    failed = []
-
-    for pin_num in range(pin_range_start, pin_range_end + 1):
-        pin_code = str(pin_num).zfill(3)
-        existing = Pin.query.filter_by(pin_code=pin_code).first()
-
-        if not existing:
-            pin = Pin(pin_code=pin_code, subject_id=subject_id, answer_text=answer_text)
-            db.session.add(pin)
-            created += 1
-        else:
-            failed.append(pin_code)
-
-    db.session.commit()
-
-    subject = Subject.query.get(subject_id)
-    return jsonify({
-        'success': True,
-        'created': created,
-        'failed': failed,
-        'message': f'Created {created} PINs for {subject.name}. Failed: {len(failed)}'
-    })
-
-
-@admin_bp.route('/update_content', methods=['POST'])
-@login_required
-def update_content():
-    """Update home page content"""
-    sections = ['hero_title', 'hero_text', 'announcement', 'instructions',
-                'whatsapp_link', 'telegram_link', 'footer_text']
-
-    for section in sections:
-        content = request.form.get(section, '')
-        home_content = HomeContent.query.filter_by(section=section).first()
-        if home_content:
-            home_content.content = content
-        else:
-            home_content = HomeContent(section=section, content=content)
-            db.session.add(home_content)
-
-    db.session.commit()
-    return jsonify({'success': True, 'message': 'Home page content updated successfully!'})
-
-
-@admin_bp.route('/get_home_content', methods=['GET'])
-@login_required
+# ==================== HOME CONTENT MANAGEMENT ====================
+@admin_bp.route('/get_home_content')
+@admin_required
 def get_home_content():
-    """Get current home page content for editing"""
-    sections = ['hero_title', 'hero_text', 'announcement', 'instructions',
-                'whatsapp_link', 'telegram_link', 'footer_text']
-
+    sections = ['hero_title', 'hero_text', 'moving_tagline', 'whatsapp_link',
+                'telegram_link', 'vip_text', 'vip_number', 'need_help_text',
+                'support_email', 'footer_text']
     content = {}
     for section in sections:
-        home_content = HomeContent.query.filter_by(section=section).first()
-        content[section] = home_content.content if home_content else ''
-
+        home = HomeContent.query.filter_by(section=section).first()
+        content[section] = home.content if home else ''
     return jsonify(content)
 
 
-@admin_bp.route('/add_timetable', methods=['POST'])
-@login_required
-def add_timetable():
-    """Add exam timetable entry - shows on home page"""
+@admin_bp.route('/update_home_content', methods=['POST'])
+@admin_required
+def update_home_content():
+    data = request.json
+    for key, value in data.items():
+        home = HomeContent.query.filter_by(section=key).first()
+        if home:
+            home.content = value
+        else:
+            home = HomeContent(section=key, content=value, content_type='text')
+            db.session.add(home)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Home content updated!'})
+
+
+# ==================== SUBJECT MANAGEMENT ====================
+@admin_bp.route('/get_subjects')
+@admin_required
+def get_subjects():
+    subjects = Subject.query.order_by(Subject.display_order, Subject.name).all()
+    return jsonify([{
+        'id': s.id,
+        'name': s.name,
+        'exam_type': s.exam_type,
+        'has_practical': s.has_practical,
+        'icon': s.icon,
+        'pin_count': Pin.query.filter_by(subject_id=s.id).count()
+    } for s in subjects])
+
+
+@admin_bp.route('/add_subject', methods=['POST'])
+@admin_required
+def add_subject():
+    name = request.form.get('name', '').strip()
     exam_type = request.form.get('exam_type')
-    subject = request.form.get('subject')
-    paper = request.form.get('paper')
-    date = request.form.get('date')
-    time = request.form.get('time')
-    year = request.form.get('year', 2026)
+    icon = request.form.get('icon', 'fa-book')
+    has_practical = request.form.get('has_practical') == 'true'
 
-    entry = ExamTimetable(exam_type=exam_type, subject=subject, paper=paper,
-                          date=date, time=time, year=year)
-    db.session.add(entry)
+    if not name:
+        return jsonify({'success': False, 'error': 'Subject name required'})
+
+    existing = Subject.query.filter_by(name=name).first()
+    if existing:
+        return jsonify({'success': False, 'error': 'Subject already exists'})
+
+    subject = Subject(
+        name=name,
+        exam_type=exam_type,
+        icon=icon,
+        has_practical=has_practical,
+        show_on_homepage=True
+    )
+    db.session.add(subject)
     db.session.commit()
 
-    return jsonify({'success': True, 'message': 'Timetable entry added'})
+    return jsonify({'success': True, 'message': 'Subject added!'})
 
 
-@admin_bp.route('/delete_timetable/<int:entry_id>', methods=['POST'])
-@login_required
-def delete_timetable(entry_id):
-    """Delete timetable entry"""
-    entry = ExamTimetable.query.get_or_404(entry_id)
-    db.session.delete(entry)
+@admin_bp.route('/update_subject/<int:id>', methods=['POST'])
+@admin_required
+def update_subject(id):
+    subject = Subject.query.get_or_404(id)
+    name = request.form.get('name')
+    icon = request.form.get('icon')
+    has_practical = request.form.get('has_practical') == 'true'
+    exam_type = request.form.get('exam_type')
+
+    if name:
+        subject.name = name
+    if icon:
+        subject.icon = icon
+    subject.has_practical = has_practical
+    if exam_type:
+        subject.exam_type = exam_type
+
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Subject updated!'})
+
+
+@admin_bp.route('/delete_subject/<int:id>', methods=['POST'])
+@admin_required
+def delete_subject(id):
+    subject = Subject.query.get_or_404(id)
+    subject_name = subject.name
+
+    pins = Pin.query.filter_by(subject_id=id).all()
+    pin_count = len(pins)
+
+    for pin in pins:
+        for img in pin.images:
+            if img.image_path:
+                filepath = os.path.join('app/static', img.image_path)
+                if os.path.exists(filepath):
+                    try:
+                        os.remove(filepath)
+                    except:
+                        pass
+            db.session.delete(img)
+        db.session.delete(pin)
+
+    db.session.delete(subject)
     db.session.commit()
 
-    return jsonify({'success': True, 'message': 'Entry deleted'})
+    return jsonify({
+        'success': True,
+        'message': f'Subject "{subject_name}" deleted. {pin_count} PIN(s) also removed.'
+    })
 
 
-@admin_bp.route('/get_stats', methods=['GET'])
-@login_required
-def get_stats():
-    """Get statistics for charts and dashboard"""
-    stats = {
-        'total_pins': Pin.query.count(),
-        'total_views': db.session.query(db.func.sum(Pin.views)).scalar() or 0,
-        'subjects_with_pins': db.session.query(Subject).join(Pin).distinct().count(),
-        'total_images': Image.query.count(),
-        'total_subjects': Subject.query.count(),
-        'most_viewed_pin': None,
-        'top_subjects': []
-    }
+# ==================== PIN MANAGEMENT ====================
+def save_base64_image(base64_data, pin_id):
+    """Save base64 image to disk and return path"""
+    try:
+        # Extract the base64 data (remove data:image/png;base64, prefix)
+        if ',' in base64_data:
+            base64_string = base64_data.split(',')[1]
+        else:
+            base64_string = base64_data
 
-    most_viewed = Pin.query.order_by(Pin.views.desc()).first()
-    if most_viewed:
-        stats['most_viewed_pin'] = {
-            'pin': most_viewed.pin_code,
-            'views': most_viewed.views,
-            'subject': most_viewed.subject.name
-        }
+        # Decode base64
+        image_data = base64.b64decode(base64_string)
 
-    # Top 5 subjects by views
-    top_subjects = db.session.query(
-        Subject.name,
-        db.func.sum(Pin.views).label('total_views')
-    ).join(Pin).group_by(Subject.id).order_by(db.func.sum(Pin.views).desc()).limit(5).all()
+        # Generate unique filename
+        filename = f"pin_{pin_id}_{uuid.uuid4().hex[:8]}.png"
 
-    stats['top_subjects'] = [{'name': s[0], 'views': s[1] or 0} for s in top_subjects]
+        # Ensure upload directory exists - FIXED PATH
+        upload_dir = os.path.join('app/static/uploads/pins')
+        os.makedirs(upload_dir, exist_ok=True)
 
-    return jsonify(stats)
+        # Save file
+        filepath = os.path.join(upload_dir, filename)
+        with open(filepath, 'wb') as f:
+            f.write(image_data)
+
+        # Return CORRECT path for database (with /static/)
+        return f'/static/uploads/pins/{filename}'  # FIXED: Added /static/
+    except Exception as e:
+        print(f"Error saving image: {str(e)}")
+        return None
+
+def extract_and_save_images(html_content, pin_id):
+    """Extract base64 images from HTML and save them as files"""
+    # Find all base64 images in the HTML
+    pattern = r'src="(data:image/[^;]+;base64,[^"]+)"'
+    matches = re.findall(pattern, html_content)
+
+    saved_paths = []
+    for idx, base64_img in enumerate(matches):
+        saved_path = save_base64_image(base64_img, pin_id)
+        if saved_path:
+            saved_paths.append(saved_path)
+            # Replace base64 with FULL file path in HTML
+            html_content = html_content.replace(base64_img, saved_path)  # FIXED: Use full path directly
+
+    return html_content, saved_paths
+
+
+@admin_bp.route('/get_all_pins')
+@admin_required
+def get_all_pins():
+    try:
+        pins = Pin.query.order_by(Pin.id.desc()).all()
+        result = []
+        for p in pins:
+            subject_name = p.subject_name
+            if not subject_name and p.subject:
+                subject_name = p.subject.name
+            if not subject_name:
+                subject_name = 'Unknown'
+
+            result.append({
+                'id': p.id,
+                'pin_code': p.pin_code,
+                'subject_name': subject_name,
+                'views': p.views,
+                'is_active': p.is_active if hasattr(p, 'is_active') else True,
+            })
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error in get_all_pins: {str(e)}")
+        return jsonify([])
+
+
+@admin_bp.route('/get_pin/<int:id>')
+@admin_required
+def get_pin(id):
+    pin = Pin.query.get_or_404(id)
+    return jsonify({
+        'id': pin.id,
+        'pin_code': pin.pin_code,
+        'subject_name': pin.subject_name or (pin.subject.name if pin.subject else ''),
+        'answer_text': pin.answer_text,
+        'posted_by': getattr(pin, 'posted_by', 'AnswerPoint'),
+        'header_color': getattr(pin, 'header_color', '#ffffff'),
+        'answer_text_color': getattr(pin, 'answer_text_color', '#1f2937'),
+        'views': pin.views,
+        'is_active': pin.is_active if hasattr(pin, 'is_active') else True,
+    })
+
+
+@admin_bp.route('/get_pin_answer/<int:id>')
+@admin_required
+def get_pin_answer(id):
+    pin = Pin.query.get_or_404(id)
+    return jsonify({
+        'success': True,
+        'answer_text': pin.answer_text or '',
+        'pin_code': pin.pin_code,
+        'subject_name': pin.subject_name or '',
+        'posted_by': getattr(pin, 'posted_by', 'AnswerPoint'),
+        'header_color': getattr(pin, 'header_color', '#ffffff'),
+        'answer_text_color': getattr(pin, 'answer_text_color', '#1f2937')
+    })
+
+
+@admin_bp.route('/check_pin/<pin_code>')
+@admin_required
+def check_pin(pin_code):
+    pin = Pin.query.filter_by(pin_code=pin_code).first()
+    return jsonify({'exists': pin is not None})
+
+
+@admin_bp.route('/create_pin_simple', methods=['POST'])
+@admin_required
+def create_pin_simple():
+    try:
+        pin_code = request.form.get('pin_code', '').strip()
+        subject_name = request.form.get('subject_name', '').strip()
+        posted_by = request.form.get('posted_by', 'AnswerPoint')
+        header_color = request.form.get('header_color', '#ffffff')
+        answer_text_color = request.form.get('answer_text_color', '#1f2937')
+        answer_text = request.form.get('answer_text', '')
+
+        # Validation
+        if not pin_code or len(pin_code) != 3:
+            return jsonify({'success': False, 'message': 'PIN must be exactly 3 digits'})
+        if not subject_name:
+            return jsonify({'success': False, 'message': 'Subject name is required'})
+        if not answer_text or answer_text == '<p><br></p>':
+            return jsonify({'success': False, 'message': 'Answer content is required'})
+
+        # Check if PIN exists
+        existing = Pin.query.filter_by(pin_code=pin_code).first()
+        if existing:
+            return jsonify({'success': False, 'message': f'PIN {pin_code} already exists!'})
+
+        # Create PIN - NO subject_id being set!
+        pin = Pin(
+            pin_code=pin_code,
+            subject_name=subject_name,
+            posted_by=posted_by,
+            header_color=header_color,
+            answer_text_color=answer_text_color,
+            answer_text=answer_text,
+            is_active=True,
+            views=0
+        )
+        db.session.add(pin)
+        db.session.flush()
+
+        # Extract and save images from answer_text
+        processed_html, saved_images = extract_and_save_images(answer_text, pin.id)
+        pin.answer_text = processed_html
+
+        # Save image records to database
+        for img_path in saved_images:
+            image = Image(
+                pin_id=pin.id,
+                image_path=img_path
+            )
+            db.session.add(image)
+
+        db.session.commit()
+
+        return jsonify({'success': True, 'message': 'PIN created successfully!', 'pin_id': pin.id})
+
+    except Exception as e:
+        print(f"Error creating PIN: {str(e)}")
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+@admin_bp.route('/update_pin_full', methods=['POST'])
+@admin_required
+def update_pin_full():
+    try:
+        pin_id = request.form.get('pin_id')
+        if not pin_id:
+            return jsonify({'success': False, 'message': 'PIN ID is required'})
+
+        pin = Pin.query.get_or_404(int(pin_id))
+
+        # Update fields
+        pin.pin_code = request.form.get('pin_code', pin.pin_code)
+        pin.subject_name = request.form.get('subject_name', pin.subject_name)
+        pin.posted_by = request.form.get('posted_by', pin.posted_by)
+        pin.header_color = request.form.get('header_color', pin.header_color)
+        pin.answer_text_color = request.form.get('answer_text_color', pin.answer_text_color)
+
+        answer_text = request.form.get('answer_text', pin.answer_text)
+
+        # Extract and save new images
+        processed_html, saved_images = extract_and_save_images(answer_text, pin.id)
+        pin.answer_text = processed_html
+
+        # Save new image records (NO file_name)
+        for img_path in saved_images:
+            # Check if image already exists
+            existing = Image.query.filter_by(pin_id=pin.id, image_path=img_path).first()
+            if not existing:
+                image = Image(
+                    pin_id=pin.id,
+                    image_path=img_path
+                )
+                db.session.add(image)
+
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'PIN updated successfully!'})
+
+    except Exception as e:
+        print(f"Error updating PIN: {str(e)}")
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
+
+
+@admin_bp.route('/delete_pin/<int:id>', methods=['POST'])
+@admin_required
+def delete_pin(id):
+    pin = Pin.query.get_or_404(id)
+
+    # Delete associated image files
+    for img in pin.images:
+        if img.image_path:
+            filepath = os.path.join('app/static', img.image_path)
+            if os.path.exists(filepath):
+                try:
+                    os.remove(filepath)
+                except:
+                    pass
+        db.session.delete(img)
+
+    db.session.delete(pin)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'PIN deleted!'})
+
+
+@admin_bp.route('/toggle_pin/<int:id>', methods=['POST'])
+@admin_required
+def toggle_pin(id):
+    pin = Pin.query.get_or_404(id)
+    pin.is_active = not pin.is_active
+    db.session.commit()
+    return jsonify({'success': True, 'message': f'PIN {"activated" if pin.is_active else "deactivated"}!'})
+
+
+@admin_bp.route('/upload_temp_image', methods=['POST'])
+@admin_required
+def upload_temp_image():
+    file = request.files.get('image')
+    if file and file.filename:
+        filename = secure_filename(f"temp_{int(time.time())}_{file.filename}")
+        upload_dir = 'app/static/uploads/temp'
+        os.makedirs(upload_dir, exist_ok=True)
+        filepath = os.path.join(upload_dir, filename)
+        file.save(filepath)
+        return jsonify({'success': True, 'url': f'/static/uploads/temp/{filename}'})
+    return jsonify({'success': False, 'error': 'No file uploaded'})
+
+
+# ==================== TIMETABLE MANAGEMENT ====================
+@admin_bp.route('/get_timetable_text')
+@admin_required
+def get_timetable_text():
+    waec = SiteSettings.query.filter_by(setting_key='waec_timetable_text').first()
+    neco = SiteSettings.query.filter_by(setting_key='neco_timetable_text').first()
+    return jsonify({
+        'waec': waec.setting_value if waec else '',
+        'neco': neco.setting_value if neco else ''
+    })
+
+
+@admin_bp.route('/save_timetable_text', methods=['POST'])
+@admin_required
+def save_timetable_text():
+    data = request.json
+    waec = SiteSettings.query.filter_by(setting_key='waec_timetable_text').first()
+    neco = SiteSettings.query.filter_by(setting_key='neco_timetable_text').first()
+
+    if waec:
+        waec.setting_value = data.get('waec', '')
+    else:
+        waec = SiteSettings(setting_key='waec_timetable_text', setting_value=data.get('waec', ''))
+        db.session.add(waec)
+
+    if neco:
+        neco.setting_value = data.get('neco', '')
+    else:
+        neco = SiteSettings(setting_key='neco_timetable_text', setting_value=data.get('neco', ''))
+        db.session.add(neco)
+
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Timetable saved!'})
+
+
+# ==================== SITE SETTINGS ====================
+@admin_bp.route('/get_site_settings')
+@admin_required
+def get_site_settings():
+    site_name = SiteSettings.query.filter_by(setting_key='site_name').first()
+    admin_email = SiteSettings.query.filter_by(setting_key='admin_email').first()
+    return jsonify({
+        'site_name': site_name.setting_value if site_name else 'AnswerPoint',
+        'admin_email': admin_email.setting_value if admin_email else ''
+    })
+
+
+@admin_bp.route('/update_site_settings', methods=['POST'])
+@admin_required
+def update_site_settings():
+    data = request.json
+
+    site_name = SiteSettings.query.filter_by(setting_key='site_name').first()
+    if site_name:
+        site_name.setting_value = data.get('site_name', 'AnswerPoint')
+    else:
+        site_name = SiteSettings(setting_key='site_name', setting_value=data.get('site_name', 'AnswerPoint'))
+        db.session.add(site_name)
+
+    admin_email = SiteSettings.query.filter_by(setting_key='admin_email').first()
+    if admin_email:
+        admin_email.setting_value = data.get('admin_email', '')
+    else:
+        admin_email = SiteSettings(setting_key='admin_email', setting_value=data.get('admin_email', ''))
+        db.session.add(admin_email)
+
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Settings saved!'})
+
+
+# ==================== STATISTICS ====================
+@admin_bp.route('/stats')
+@admin_required
+def stats():
+    total_pins = Pin.query.count()
+    total_subjects = Subject.query.count()
+    total_views = db.session.query(func.sum(Pin.views)).scalar() or 0
+    total_images = Image.query.count()
+    active_pins = Pin.query.filter_by(is_active=True).count()
+
+    return jsonify({
+        'total_pins': total_pins,
+        'total_subjects': total_subjects,
+        'total_views': total_views,
+        'total_images': total_images,
+        'active_pins': active_pins
+    })

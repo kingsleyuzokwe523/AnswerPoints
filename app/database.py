@@ -1,148 +1,171 @@
 from app import db
-from app.models import Subject, HomeContent, ExamTimetable, Admin
+from app.models import Admin, Subject, HomeContent, ExamTimetable, SiteSettings
 from werkzeug.security import generate_password_hash
-import os
-
+from datetime import datetime
 
 def init_default_data():
-    """Initialize database with default data if empty"""
-
     # Check if admin exists
     if Admin.query.count() == 0:
-        default_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
         admin = Admin(
-            username=os.environ.get('ADMIN_USERNAME', 'admin'),
-            password=generate_password_hash(default_password)
+            username='admin',
+            password=generate_password_hash('admin123'),
+            created_at=datetime.utcnow()
         )
         db.session.add(admin)
         db.session.commit()
-        print(f"Admin created - Username: admin, Password: {default_password}")
-
-    # Check if subjects exist
-    if Subject.query.count() == 0:
-        add_default_subjects()
-
-    # Check if home content exists
+        print("✅ Admin created: username='admin', password='admin123'")
+    
+    # Add default home content if empty
     if HomeContent.query.count() == 0:
-        add_default_home_content()
-
-    # Check if timetable exists
-    if ExamTimetable.query.count() == 0:
-        add_default_timetable()
-
-
-def add_default_subjects():
-    """Add all WAEC and NECO subjects"""
-    all_subjects = [
-        "Agricultural Science", "Air-conditioning & Refrigeration", "Animal Husbandry (Alt B)",
-        "Applied Electricity", "Arabic", "Auto Body Repairs & Spray Painting",
-        "Auto Electrical Works", "Auto Mechanical Work", "Auto Mechanics",
-        "Automobile Parts Merchandising", "Basic Electricity", "Basic Electronics",
-        "Biology", "Block Laying, Bricklaying & Concrete Works", "Bookkeeping",
-        "Building Construction", "Business Management", "Carpentry & Joinery",
-        "Catering Craft Practice", "Chemistry", "Christian Religious Studies",
-        "Civic Education", "Clothing & Textiles", "Commerce", "Computer Studies",
-        "Cosmetology", "Data Processing", "Dyeing & Bleaching", "Economics",
-        "Efik", "Electrical Installation & Maintenance", "Electronics",
-        "English Language", "Edo", "Financial Accounting", "Fisheries (Alt B)",
-        "Foods and Nutrition", "French", "Furniture Making",
-        "Further Mathematics / Mathematics (Elective)", "Garment Making",
-        "General Mathematics / Mathematics (Core)", "Geography", "Government",
-        "GSM Phone Maintenance & Repair", "Hausa", "Health Education / Health Science",
-        "History", "Home Management", "Ibibio", "Igbo", "Insurance",
-        "Islamic Studies", "Leather Goods Manufacturing & Repairs", "Literature-in-English",
-        "Machine Woodworking", "Marketing", "Metalwork", "Mining", "Music",
-        "Office Practice", "Painting & Decorating", "Photography", "Physical Education",
-        "Physics", "Plumbing & Pipe Fitting", "Principles of Cost Accounting",
-        "Printing Craft Practice", "Radio, Television & Electronic Works", "Salesmanship",
-        "Stenography", "Store Keeping", "Store Management", "Technical Drawing",
-        "Tourism", "Upholstery", "Visual Art", "Welding & Fabrication Engineering Craft",
-        "Woodwork", "Yoruba"
-    ]
-
-    practical_subjects = ["Physics", "Chemistry", "Biology", "Agricultural Science",
-                          "Computer Studies", "Electronics", "Basic Electricity",
-                          "Health Education / Health Science", "Physical Education",
-                          "Applied Electricity", "Basic Electronics", "GSM Phone Maintenance & Repair"]
-
-    # Add WAEC subjects
-    for name in all_subjects:
-        has_prac = name in practical_subjects
-        subject = Subject(name=name, exam_type="WAEC", has_practical=has_prac)
-        db.session.add(subject)
-
-    # Add NECO subjects
-    for name in all_subjects:
-        has_prac = name in practical_subjects
-        subject = Subject(name=name, exam_type="NECO", has_practical=has_prac)
-        db.session.add(subject)
-
-    db.session.commit()
-    print(f"Added {len(all_subjects) * 2} subjects")
-
-
-def add_default_home_content():
-    """Add default home page content"""
-    default_content = [
-        ("hero_title", "AnswerPoint 2026"),
-        ("hero_text",
-         "Your reliable source for accurate WAEC & NECO exam answers. Get verified solutions and excel in your examinations with our trusted answers."),
-        ("announcement",
-         "📢 HOT: 2026 WAEC/NECO Examinations are underway! Get your PIN from admin for verified answers."),
-        ("instructions",
-         "📌 HOW TO USE AnswerPoint:\n\n1️⃣ Get your unique 3-digit PIN from your administrator\n2️⃣ Enter the PIN in the box above\n3️⃣ Click 'See Answer' to view the solution\n4️⃣ Study the answers and succeed!"),
-        ("whatsapp_link", "https://whatsapp.com/channel/yourlink"),
-        ("telegram_link", "https://t.me/yourchannel"),
-        ("footer_text", "© 2026 AnswerPoint - Your Exam Success Partner | WAEC & NECO Answers Portal")
-    ]
-
-    for section, content in default_content:
-        home_content = HomeContent(section=section, content=content)
-        db.session.add(home_content)
-
-    db.session.commit()
-
-
-def add_default_timetable():
-    """Add sample exam timetable entries"""
-    timetable_entries = [
-        ("WAEC", "General Mathematics", "Paper 1 & 2", "May 15th, 2026", "9:00 AM - 1:00 PM"),
-        ("WAEC", "English Language", "Paper 1 & 2", "May 16th, 2026", "9:00 AM - 12:30 PM"),
-        ("WAEC", "Physics", "Theory & Objective", "May 18th, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Physics Practical", "Practical", "May 19th, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Chemistry", "Theory & Objective", "May 20th, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Chemistry Practical", "Practical", "May 21st, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Biology", "Theory & Objective", "May 22nd, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Biology Practical", "Practical", "May 23rd, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Economics", "Theory & Objective", "May 24th, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Government", "Theory & Objective", "May 25th, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Literature-in-English", "Paper 1 & 2", "May 26th, 2026", "9:00 AM - 12:30 PM"),
-        ("WAEC", "Geography", "Theory & Objective", "May 27th, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Commerce", "Theory & Objective", "May 28th, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Financial Accounting", "Theory & Objective", "May 29th, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Christian Religious Studies", "Theory & Objective", "May 30th, 2026", "9:00 AM - 11:30 AM"),
-        ("WAEC", "Islamic Studies", "Theory & Objective", "May 30th, 2026", "9:00 AM - 11:30 AM"),
-        ("WAEC", "Further Mathematics", "Paper 1 & 2", "June 1st, 2026", "9:00 AM - 12:30 PM"),
-        ("WAEC", "Data Processing", "Theory & Objective", "June 2nd, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Computer Studies", "Theory & Objective", "June 3rd, 2026", "9:00 AM - 12:00 PM"),
-        ("WAEC", "Technical Drawing", "Paper 1 & 2", "June 4th, 2026", "9:00 AM - 12:30 PM"),
-
-        ("NECO", "General Mathematics", "Paper 1 & 2", "June 10th, 2026", "9:00 AM - 1:00 PM"),
-        ("NECO", "English Language", "Paper 1 & 2", "June 11th, 2026", "9:00 AM - 12:30 PM"),
-        ("NECO", "Physics", "Theory & Objective", "June 13th, 2026", "9:00 AM - 12:00 PM"),
-        ("NECO", "Physics Practical", "Practical", "June 14th, 2026", "9:00 AM - 12:00 PM"),
-        ("NECO", "Chemistry", "Theory & Objective", "June 15th, 2026", "9:00 AM - 12:00 PM"),
-        ("NECO", "Chemistry Practical", "Practical", "June 16th, 2026", "9:00 AM - 12:00 PM"),
-        ("NECO", "Biology", "Theory & Objective", "June 17th, 2026", "9:00 AM - 12:00 PM"),
-        ("NECO", "Biology Practical", "Practical", "June 18th, 2026", "9:00 AM - 12:00 PM"),
-        ("NECO", "Economics", "Theory & Objective", "June 19th, 2026", "9:00 AM - 12:00 PM"),
-        ("NECO", "Government", "Theory & Objective", "June 20th, 2026", "9:00 AM - 12:00 PM")
-    ]
-
-    for exam_type, subject, paper, date, time in timetable_entries:
-        entry = ExamTimetable(exam_type=exam_type, subject=subject, paper=paper,
-                              date=date, time=time, year=2026)
-        db.session.add(entry)
-
-    db.session.commit()
-    print(f"Added {len(timetable_entries)} timetable entries")
+        default_content = [
+            # Hero section
+            ('hero_title', 'AnswerPoint'),
+            ('hero_text', 'Your reliable source for correct WAEC, NECO, and JAMB answers – quick, accurate, and free.'),
+            ('moving_tagline', '🔥 100% VERIFIED WAEC & NECO ANSWERS — JOIN OUR FREE WHATSAPP & TELEGRAM CHANNELS! 🔥'),
+            
+            # Announcements
+            ('announcement', '📢 2026 WAEC/NECO Examinations are underway! Get your verified answers here.'),
+            ('instructions', 'Enter your 3-digit PIN and click VIEW ANSWER to get your exam answers instantly.'),
+            ('hot_updates_text', '2026 WAEC MAY/JUNE FINAL EXAMINATION TIMETABLE FROM ANSWERPOINT'),
+            
+            # Social links
+            ('whatsapp_link', 'https://whatsapp.com/channel/yourlink'),
+            ('telegram_link', 'https://t.me/yourchannel'),
+            
+            # VIP section
+            ('vip_text', 'Want early VIP answers before the exam?'),
+            ('vip_number', '08065582389'),
+            
+            # Help section
+            ('need_help_text', 'Need Help? We\'re Here for You!'),
+            ('footer_text', 'Powered By AnswerPoint')
+        ]
+        for section, content in default_content:
+            home = HomeContent(section=section, content=content, content_type='text')
+            db.session.add(home)
+        db.session.commit()
+        print("✅ Home content added")
+    
+    # Add default site settings if empty
+    if SiteSettings.query.count() == 0:
+        default_settings = [
+            ('site_name', 'AnswerPoint', 'text'),
+            ('admin_email', 'admin@answerpoint.com', 'email'),
+            ('primary_color', '#1e3a8a', 'color'),
+            ('secondary_color', '#1d4ed8', 'color'),
+            ('waec_timetable_text', '', 'text'),
+            ('neco_timetable_text', '', 'text'),
+        ]
+        for key, value, setting_type in default_settings:
+            setting = SiteSettings(setting_key=key, setting_value=value, setting_type=setting_type)
+            db.session.add(setting)
+        db.session.commit()
+        print("✅ Site settings added")
+    
+    # Add all 80 WAEC subjects if empty
+    if Subject.query.count() == 0:
+        subjects = [
+            # WAEC Subjects 1-40 (First column)
+            ('Agricultural Science', 'WAEC', True, 'fa-flask', 1),
+            ('Air-conditioning & Refrigeration', 'WAEC', False, 'fa-book', 2),
+            ('Animal Husbandry (Alt B)', 'WAEC', True, 'fa-flask', 3),
+            ('Applied Electricity', 'WAEC', False, 'fa-book', 4),
+            ('Arabic', 'WAEC', False, 'fa-language', 5),
+            ('Auto Body Repairs & Spray Painting', 'WAEC', False, 'fa-book', 6),
+            ('Auto Electrical Works', 'WAEC', False, 'fa-book', 7),
+            ('Auto Mechanical Work', 'WAEC', False, 'fa-book', 8),
+            ('Auto Mechanics', 'WAEC', False, 'fa-book', 9),
+            ('Automobile Parts Merchandising', 'WAEC', False, 'fa-book', 10),
+            ('Basic Electricity', 'WAEC', False, 'fa-book', 11),
+            ('Basic Electronics', 'WAEC', False, 'fa-book', 12),
+            ('Biology', 'WAEC', True, 'fa-flask', 13),
+            ('Block Laying, Bricklaying & Concrete Works', 'WAEC', False, 'fa-book', 14),
+            ('Bookkeeping', 'WAEC', False, 'fa-book', 15),
+            ('Building Construction', 'WAEC', False, 'fa-book', 16),
+            ('Business Management', 'WAEC', False, 'fa-book', 17),
+            ('Carpentry & Joinery', 'WAEC', False, 'fa-book', 18),
+            ('Catering Craft Practice', 'WAEC', False, 'fa-book', 19),
+            ('Chemistry', 'WAEC', True, 'fa-flask', 20),
+            ('Christian Religious Studies', 'WAEC', False, 'fa-book', 21),
+            ('Civic Education', 'WAEC', False, 'fa-book', 22),
+            ('Clothing & Textiles', 'WAEC', False, 'fa-book', 23),
+            ('Commerce', 'WAEC', False, 'fa-book', 24),
+            ('Computer Studies', 'WAEC', False, 'fa-laptop-code', 25),
+            ('Cosmetology', 'WAEC', False, 'fa-book', 26),
+            ('Data Processing', 'WAEC', False, 'fa-book', 27),
+            ('Dyeing & Bleaching', 'WAEC', False, 'fa-book', 28),
+            ('Economics', 'WAEC', False, 'fa-chart-line', 29),
+            ('Efik', 'WAEC', False, 'fa-language', 30),
+            ('Electrical Installation & Maintenance', 'WAEC', False, 'fa-book', 31),
+            ('Electronics', 'WAEC', False, 'fa-book', 32),
+            ('English Language', 'WAEC', False, 'fa-book', 33),
+            ('Edo', 'WAEC', False, 'fa-language', 34),
+            ('Financial Accounting', 'WAEC', False, 'fa-book', 35),
+            ('Fisheries (Alt B)', 'WAEC', True, 'fa-flask', 36),
+            ('Foods and Nutrition', 'WAEC', True, 'fa-flask', 37),
+            ('French', 'WAEC', False, 'fa-language', 38),
+            ('Furniture Making', 'WAEC', False, 'fa-book', 39),
+            ('Further Mathematics / Mathematics (Elective)', 'WAEC', False, 'fa-calculator', 40),
+            
+            # WAEC Subjects 41-80 (Second column)
+            ('Garment Making', 'WAEC', False, 'fa-book', 41),
+            ('General Mathematics / Mathematics (Core)', 'WAEC', False, 'fa-calculator', 42),
+            ('Geography', 'WAEC', True, 'fa-flask', 43),
+            ('Government', 'WAEC', False, 'fa-book', 44),
+            ('GSM Phone Maintenance & Repair', 'WAEC', False, 'fa-book', 45),
+            ('Hausa', 'WAEC', False, 'fa-language', 46),
+            ('Health Education / Health Science', 'WAEC', False, 'fa-book', 47),
+            ('History', 'WAEC', False, 'fa-book', 48),
+            ('Home Management', 'WAEC', False, 'fa-book', 49),
+            ('Ibibio', 'WAEC', False, 'fa-language', 50),
+            ('Igbo', 'WAEC', False, 'fa-language', 51),
+            ('Insurance', 'WAEC', False, 'fa-book', 52),
+            ('Islamic Studies', 'WAEC', False, 'fa-book', 53),
+            ('Leather Goods Manufacturing & Repairs', 'WAEC', False, 'fa-book', 54),
+            ('Literature-in-English', 'WAEC', False, 'fa-book', 55),
+            ('Machine Woodworking', 'WAEC', False, 'fa-book', 56),
+            ('Marketing', 'WAEC', False, 'fa-book', 57),
+            ('Metalwork', 'WAEC', False, 'fa-book', 58),
+            ('Mining', 'WAEC', False, 'fa-book', 59),
+            ('Music', 'WAEC', False, 'fa-music', 60),
+            ('Office Practice', 'WAEC', False, 'fa-book', 61),
+            ('Painting & Decorating', 'WAEC', False, 'fa-paintbrush', 62),
+            ('Photography', 'WAEC', False, 'fa-book', 63),
+            ('Physical Education', 'WAEC', False, 'fa-book', 64),
+            ('Physics', 'WAEC', True, 'fa-flask', 65),
+            ('Plumbing & Pipe Fitting', 'WAEC', False, 'fa-book', 66),
+            ('Principles of Cost Accounting', 'WAEC', False, 'fa-book', 67),
+            ('Printing Craft Practice', 'WAEC', False, 'fa-book', 68),
+            ('Radio, Television & Electronic Works', 'WAEC', False, 'fa-book', 69),
+            ('Salesmanship', 'WAEC', False, 'fa-book', 70),
+            ('Stenography', 'WAEC', False, 'fa-book', 71),
+            ('Store Keeping', 'WAEC', False, 'fa-book', 72),
+            ('Store Management', 'WAEC', False, 'fa-book', 73),
+            ('Technical Drawing', 'WAEC', False, 'fa-book', 74),
+            ('Tourism', 'WAEC', False, 'fa-book', 75),
+            ('Upholstery', 'WAEC', False, 'fa-book', 76),
+            ('Visual Art', 'WAEC', False, 'fa-paintbrush', 77),
+            ('Welding & Fabrication Engineering Craft', 'WAEC', False, 'fa-book', 78),
+            ('Woodwork', 'WAEC', False, 'fa-book', 79),
+            ('Yoruba', 'WAEC', False, 'fa-language', 80),
+        ]
+        
+        for name, exam_type, practical, icon, order in subjects:
+            subject = Subject(
+                name=name, 
+                exam_type=exam_type, 
+                has_practical=practical,
+                icon=icon,
+                display_order=order,
+                show_on_homepage=True
+            )
+            db.session.add(subject)
+        db.session.commit()
+        print(f"✅ {len(subjects)} subjects added")
+    
+    print("\n🎉 Database initialization complete!")
+    print("=" * 40)
+    print("Login Credentials:")
+    print("Username: admin")
+    print("Password: admin123")
+    print("=" * 40)
