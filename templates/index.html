@@ -1,489 +1,508 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>AnswerPoint - Exam Answers</title>
+    <!-- Font Awesome & Inter Font -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block content %}
-<style>
-    body {
-        background: #e8e8e8;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-    }
-    
-    /* Loading overlay - favicon only */
-    .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        z-index: 9999;
-        display: none;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .loading-overlay.active {
-        display: flex;
-    }
-    
-    .favicon-loader {
-        width: 48px;
-        height: 48px;
-        animation: spin 0.6s linear infinite;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    .answer-text {
-        line-height: 1.6;
-        word-wrap: break-word;
-    }
-    
-    .answer-text p {
-        margin-bottom: 1rem;
-    }
-    
-    .answer-text img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 8px;
-        margin: 10px 0;
-        display: block;
-    }
-    
-    @keyframes marquee {
-        0% { transform: translateX(100%); }
-        100% { transform: translateX(-100%); }
-    }
-    
-    .animate-marquee {
-        animation: marquee 14s linear infinite;
-        display: inline-block;
-        white-space: nowrap;
-    }
-    
-    input[type="tel"]::-webkit-inner-spin-button,
-    input[type="tel"]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-    
-    input[type="tel"] {
-        -moz-appearance: textfield;
-    }
-    
-    @keyframes loadingMove {
-        0% { width: 10%; margin-left: 0%; }
-        50% { width: 40%; margin-left: 30%; }
-        100% { width: 10%; margin-left: 80%; }
-    }
-    
-    .sticky-top {
-        position: sticky;
-        top: 0;
-        z-index: 50;
-    }
-    
-    .sticky-bottom {
-        position: sticky;
-        bottom: 0;
-        z-index: 50;
-    }
-    
-    .hidden {
-        display: none;
-    }
-    
-    .practical-badge {
-        background: #dbeafe;
-        color: #1e40af;
-        font-size: 9px;
-        padding: 2px 5px;
-        border-radius: 10px;
-        margin-left: 5px;
-        white-space: nowrap;
-    }
-    
-    .answer-outer-container {
-        background: #f5f5f0;
-        border: 2px solid #3b82f6;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    }
-    
-    .answer-inner-box {
-        background: #ffffff;
-        border-radius: 16px;
-        margin: 20px;
-        padding: 24px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-    }
-    
-    .answer-subject {
-        color: #000000;
-        margin-top: 15px;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-        font-size: calc(1.5rem - 4px);
-    }
-    
-    .info-card-modern {
-        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        border-radius: 16px;
-        padding: 4px;
-        margin: 15px 20px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(40, 167, 69, 0.2);
-    }
-    
-    .info-card-inner {
-        background: white;
-        border-radius: 14px;
-        padding: 16px 24px;
-    }
-    
-    .info-item {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-    }
-    
-    .info-icon {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 18px;
-    }
-    
-    .info-label {
-        font-weight: 700;
-        color: #28a745;
-        font-size: 14px;
-        letter-spacing: 0.5px;
-    }
-    
-    .info-value {
-        font-weight: 600;
-        color: #1a1a2e;
-        font-size: 15px;
-        background: #f8f9fa;
-        padding: 4px 12px;
-        border-radius: 20px;
-    }
-    
-    .info-divider {
-        width: 1px;
-        height: 40px;
-        background: linear-gradient(to bottom, #e0e0e0, #b0b0b0, #e0e0e0);
-    }
-    
-    .separator {
-        text-align: center;
-        margin: 15px 0;
-        color: #cbd5e1;
-        font-size: 12px;
-        letter-spacing: 2px;
-    }
-    
-    .main-outer-container {
-        background: #f5f5f0;
-        border: 2px solid #3b82f6;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    }
-    
-    .main-inner-box {
-        background: #ffffff;
-        border-radius: 16px;
-        margin: 20px;
-        padding: 24px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-    }
-    
-    .subjects-header {
-        text-align: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #e5e7eb;
-    }
-    
-    .subjects-header h2 {
-        font-size: 16px;
-        font-weight: 700;
-        color: #1f2937;
-        margin: 0;
-    }
-    
-    .subjects-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px 40px;
-        margin-bottom: 20px;
-    }
-    
-    .subject-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 3px 0;
-    }
-    
-    .subject-number {
-        color: #9ca3af;
-        font-size: 11px;
-        width: 24px;
-        flex-shrink: 0;
-    }
-    
-    .subject-icon {
-        color: #2563eb;
-        font-size: 11px;
-        width: 14px;
-        flex-shrink: 0;
-    }
-    
-    .subject-name {
-        color: #374151;
-        font-size: 11px;
-        flex: 1;
-    }
-    
-    .hotupdates-inner-box {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        border-radius: 12px;
-        padding: 10px 14px;
-        margin-bottom: 15px;
-    }
-    
-    .hotupdates-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .hotupdates-header i {
-        color: #ef4444;
-        font-size: 14px;
-    }
-    
-    .hotupdates-header span {
-        color: #dc2626;
-        font-weight: 800;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .timetable-inner-box {
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        border-radius: 12px;
-        padding: 10px 14px;
-        margin-bottom: 20px;
-    }
-    
-    .timetable-link {
-        display: block;
-        color: #2563eb;
-        text-decoration: none;
-        font-size: 11px;
-        font-weight: 500;
-    }
-    
-    .timetable-link i {
-        color: #3b82f6;
-        margin-right: 8px;
-        font-size: 10px;
-    }
-    
-    .timetable-link:hover {
-        color: #1d4ed8;
-        text-decoration: underline;
-    }
-    
-    .need-help-section {
-        background: #1f2937;
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
-    }
-    
-    .need-help-title {
-        color: #f59e0b;
-        font-weight: 700;
-        font-size: 14px;
-        margin-bottom: 10px;
-        letter-spacing: 0.5px;
-    }
-    
-    .need-help-email {
-        color: #f59e0b;
-        font-size: 13px;
-        margin-bottom: 8px;
-    }
-    
-    .need-help-email a {
-        color: #f59e0b;
-        text-decoration: none;
-    }
-    
-    .need-help-email a:hover {
-        text-decoration: underline;
-    }
-    
-    .need-help-powered {
-        color: #f59e0b;
-        font-size: 11px;
-        margin-top: 8px;
-        padding-top: 8px;
-        border-top: 1px solid #374151;
-    }
-    
-    .hero-buttons {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 12px;
-        width: 100%;
-    }
-    
-    .hero-buttons a, 
-    .hero-buttons button {
-        padding: 8px 16px;
-        font-size: 13px;
-        white-space: nowrap;
-        text-align: center;
-        border-radius: 8px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-    
-    @media (max-width: 640px) {
+        body {
+            background: #e8e8e8;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* REMOVED PAGE LOADING OVERLAY — only favicon loading will be used (browser tab) */
+        /* No more .loading-overlay or favicon-loader on page */
+        
+        .answer-text {
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+        
+        .answer-text p {
+            margin-bottom: 1rem;
+        }
+        
+        .answer-text img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: block;
+        }
+        
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        .animate-marquee {
+            animation: marquee 14s linear infinite;
+            display: inline-block;
+            white-space: nowrap;
+        }
+        
+        input[type="tel"]::-webkit-inner-spin-button,
+        input[type="tel"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        input[type="tel"] {
+            -moz-appearance: textfield;
+        }
+        
+        @keyframes loadingMove {
+            0% { width: 10%; margin-left: 0%; }
+            50% { width: 40%; margin-left: 30%; }
+            100% { width: 10%; margin-left: 80%; }
+        }
+        
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .sticky-bottom {
+            position: sticky;
+            bottom: 0;
+            z-index: 50;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .practical-badge {
+            background: #dbeafe;
+            color: #1e40af;
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 10px;
+            margin-left: 5px;
+            white-space: nowrap;
+        }
+        
+        .answer-outer-container {
+            background: #f5f5f0;
+            border: 2px solid #3b82f6;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .answer-inner-box {
+            background: #ffffff;
+            border-radius: 16px;
+            margin: 20px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+        
         .answer-subject {
-            font-size: calc(1.25rem - 4px);
+            color: #000000;
+            margin-top: 15px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            font-size: calc(1.5rem - 4px);
+        }
+        
+        .info-card-modern {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 16px;
+            padding: 4px;
+            margin: 15px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+        
+        .info-card-inner {
+            background: white;
+            border-radius: 14px;
+            padding: 16px 24px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .info-label {
+            font-weight: 700;
+            color: #28a745;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #1a1a2e;
+            font-size: 15px;
+            background: #f8f9fa;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        
+        .info-divider {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, #e0e0e0, #b0b0b0, #e0e0e0);
+        }
+        
+        .separator {
+            text-align: center;
+            margin: 15px 0;
+            color: #cbd5e1;
+            font-size: 12px;
+            letter-spacing: 2px;
+        }
+        
+        .main-outer-container {
+            background: #f5f5f0;
+            border: 2px solid #3b82f6;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .main-inner-box {
+            background: #ffffff;
+            border-radius: 16px;
+            margin: 20px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+        
+        .subjects-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .subjects-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 40px;
+            margin-bottom: 20px;
+        }
+        
+        .subject-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 3px 0;
+        }
+        
+        .subject-number {
+            color: #9ca3af;
+            font-size: 11px;
+            width: 24px;
+            flex-shrink: 0;
+        }
+        
+        .subject-icon {
+            color: #2563eb;
+            font-size: 11px;
+            width: 14px;
+            flex-shrink: 0;
+        }
+        
+        .subject-name {
+            color: #374151;
+            font-size: 11px;
+            flex: 1;
+        }
+        
+        .hotupdates-inner-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 15px;
+        }
+        
+        .hotupdates-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .hotupdates-header i {
+            color: #ef4444;
+            font-size: 14px;
+        }
+        
+        .hotupdates-header span {
+            color: #dc2626;
+            font-weight: 800;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .timetable-inner-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 20px;
+        }
+        
+        .timetable-link {
+            display: block;
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .timetable-link i {
+            color: #3b82f6;
+            margin-right: 8px;
+            font-size: 10px;
+        }
+        
+        .timetable-link:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+        
+        .need-help-section {
+            background: #1f2937;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .need-help-title {
+            color: #f59e0b;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        
+        .need-help-email {
+            color: #f59e0b;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        
+        .need-help-email a {
+            color: #f59e0b;
+            text-decoration: none;
+        }
+        
+        .need-help-email a:hover {
+            text-decoration: underline;
+        }
+        
+        .need-help-powered {
+            color: #f59e0b;
+            font-size: 11px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #374151;
         }
         
         .hero-buttons {
-            gap: 8px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
         }
         
         .hero-buttons a, 
         .hero-buttons button {
-            padding: 6px 10px;
-            font-size: 10px;
-        }
-        
-        .info-item {
-            flex-direction: column;
+            padding: 8px 16px;
+            font-size: 13px;
+            white-space: nowrap;
             text-align: center;
-            gap: 4px;
-        }
-        
-        .info-divider {
-            width: 80%;
-            height: 1px;
-            margin: 6px auto;
-        }
-        
-        .info-card-inner {
-            padding: 10px 12px;
-        }
-        
-        .info-icon {
-            width: 24px;
-            height: 24px;
-            font-size: 11px;
-        }
-        
-        .info-label {
-            font-size: 9px;
-        }
-        
-        .info-value {
-            font-size: 10px;
-            padding: 2px 8px;
-        }
-        
-        .subjects-grid {
-            grid-template-columns: 1fr;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
             gap: 6px;
+            cursor: pointer;
         }
         
-        .subject-number {
-            font-size: 10px;
-            width: 22px;
+        /* ========== EXTREME MOBILE FRIENDLY ========== */
+        @media (max-width: 640px) {
+            .answer-subject {
+                font-size: calc(1.25rem - 4px);
+            }
+            
+            .hero-buttons {
+                gap: 8px;
+            }
+            
+            .hero-buttons a, 
+            .hero-buttons button {
+                padding: 6px 10px;
+                font-size: 10px;
+            }
+            
+            .info-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 4px;
+            }
+            
+            .info-divider {
+                width: 80%;
+                height: 1px;
+                margin: 6px auto;
+            }
+            
+            .info-card-inner {
+                padding: 10px 12px;
+            }
+            
+            .info-icon {
+                width: 24px;
+                height: 24px;
+                font-size: 11px;
+            }
+            
+            .info-label {
+                font-size: 9px;
+            }
+            
+            .info-value {
+                font-size: 10px;
+                padding: 2px 8px;
+            }
+            
+            .subjects-grid {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+            
+            .subject-number {
+                font-size: 10px;
+                width: 22px;
+            }
+            
+            .subject-name {
+                font-size: 10px;
+            }
+            
+            .subject-icon {
+                font-size: 10px;
+                width: 14px;
+            }
+            
+            .main-inner-box {
+                padding: 12px;
+                margin: 10px;
+            }
+            
+            .sticky-top .flex {
+                gap: 6px;
+            }
+            
+            .sticky-top input {
+                font-size: 11px;
+                padding: 6px 6px;
+            }
+            
+            .sticky-top button,
+            .sticky-top a {
+                padding: 6px 8px;
+                font-size: 10px;
+            }
+            
+            .hotupdates-inner-box,
+            .timetable-inner-box {
+                padding: 8px 10px;
+            }
+            
+            .need-help-section {
+                padding: 12px;
+            }
+            
+            .sticky-bottom .flex {
+                gap: 6px;
+            }
+            
+            .sticky-bottom input {
+                font-size: 11px;
+                padding: 6px 6px;
+            }
+            
+            .sticky-bottom button,
+            .sticky-bottom a {
+                padding: 6px 8px;
+                font-size: 10px;
+            }
+            
+            /* improve tap targets */
+            button, a, .hero-buttons button, .sticky-top button, .sticky-bottom button {
+                min-height: 36px;
+            }
+            
+            input {
+                font-size: 16px !important; /* prevents zoom on iOS */
+            }
         }
         
-        .subject-name {
-            font-size: 10px;
+        /* better spacing for tiny screens */
+        @media (max-width: 480px) {
+            .max-w-\[750px\] {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+            .answer-inner-box {
+                margin: 12px;
+                padding: 16px;
+            }
+            .info-card-modern {
+                margin: 12px 12px;
+            }
         }
         
-        .subject-icon {
-            font-size: 10px;
-            width: 14px;
+        /* custom loading class for body while favicon spins (no UI change) */
+        body.favicon-loading {
+            cursor: wait;
         }
-        
-        .main-inner-box {
-            padding: 12px;
-            margin: 10px;
-        }
-        
-        .sticky-top .flex {
-            gap: 6px;
-        }
-        
-        .sticky-top input {
-            font-size: 11px;
-            padding: 6px 6px;
-        }
-        
-        .sticky-top button,
-        .sticky-top a {
-            padding: 6px 8px;
-            font-size: 10px;
-        }
-        
-        .hotupdates-inner-box,
-        .timetable-inner-box {
-            padding: 8px 10px;
-        }
-        
-        .need-help-section {
-            padding: 12px;
-        }
-        
-        .sticky-bottom .flex {
-            gap: 6px;
-        }
-        
-        .sticky-bottom input {
-            font-size: 11px;
-            padding: 6px 6px;
-        }
-        
-        .sticky-bottom button,
-        .sticky-bottom a {
-            padding: 6px 8px;
-            font-size: 10px;
-        }
-    }
-</style>
+    </style>
+</head>
+<body>
 
-<div id="loadingOverlay" class="loading-overlay">
-    <img src="{{ url_for('static', filename='favicon.ico') }}" alt="Loading" class="favicon-loader">
-</div>
+<!-- ========== NO PAGE LOADING OVERLAY ========== -->
+<!-- The loading overlay div is completely removed: only browser favicon spins -->
 
 <div class="sticky-top bg-gradient-to-r from-blue-800 via-blue-700 to-blue-800 shadow-lg z-50 border-b border-blue-600">
     <div class="max-w-[750px] mx-auto px-3 py-2">
@@ -622,12 +641,11 @@
                 <span>═══════════════════════════════════════</span>
             </div>
             
-            <!-- KEPT: More Answers Loading text -->
+            <!-- More Answers Loading text (KEPT but visible after answer) -->
             <div class="text-center my-3">
                 <span class="text-red-600 font-bold text-sm"><i class="fas fa-spinner fa-spin mr-2"></i> More Answers Loading...</span>
             </div>
             
-            <!-- KEPT: Moving Green Status Bar -->
             <div class="mt-3 mb-4 mx-4">
                 <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                     <div class="bg-green-600 h-2 rounded-full" style="width: 30%; animation: loadingMove 1.5s ease-in-out infinite;"></div>
@@ -693,19 +711,58 @@
 </div>
 
 <script>
+// ========== FAVICON SPINNING (NO PAGE OVERLAY) ==========
 let currentAnswerPin = null;
 let isLoading = false;
 const answerCache = new Map();
 const imageCache = new Set();
+let faviconInterval = null;
+const originalFavicon = "{{ url_for('static', filename='favicon.ico') }}";
 
-function showLoading() {
-    document.getElementById('loadingOverlay').classList.add('active');
+function startFaviconSpinner() {
+    if (faviconInterval) clearInterval(faviconInterval);
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    let angle = 0;
+    faviconInterval = setInterval(() => {
+        ctx.clearRect(0, 0, 32, 32);
+        // draw spinner arc
+        ctx.beginPath();
+        ctx.arc(16, 16, 12, angle, angle + Math.PI * 1.8);
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(16, 16, 12, 0, Math.PI * 2);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        angle += 0.25;
+        if (angle > Math.PI * 2) angle = 0;
+        let link = document.querySelector("link[rel*='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+        }
+        link.href = canvas.toDataURL();
+    }, 60);
 }
 
-function hideLoading() {
-    document.getElementById('loadingOverlay').classList.remove('active');
+function stopFaviconSpinner() {
+    if (faviconInterval) {
+        clearInterval(faviconInterval);
+        faviconInterval = null;
+    }
+    const link = document.querySelector("link[rel*='icon']");
+    if (link && originalFavicon) {
+        link.href = originalFavicon;
+    }
 }
 
+// No more showLoading/hideLoading with overlays - we only use favicon spinners
 function preloadImages(html) {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
@@ -723,6 +780,7 @@ function preloadImages(html) {
 function resetToHomepage() {
     currentAnswerPin = null;
     isLoading = false;
+    stopFaviconSpinner();
     
     const answerSection = document.getElementById('answerSection');
     if (answerSection) {
@@ -739,14 +797,10 @@ function resetToHomepage() {
     const errorBox = document.getElementById('pinErrorBox');
     if (errorBox) errorBox.classList.add('hidden');
     
-    const headerPin = document.getElementById('pinInputHeader');
-    if (headerPin) headerPin.value = '';
-    
-    const footerPin = document.getElementById('pinInputFooter');
-    if (footerPin) footerPin.value = '';
-    
-    const errorPinInput = document.getElementById('pinInputError');
-    if (errorPinInput) errorPinInput.value = '';
+    ['pinInputHeader', 'pinInputFooter', 'pinInputError'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
     
     sessionStorage.removeItem('current_viewing_pin');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -754,7 +808,6 @@ function resetToHomepage() {
 
 function loadSubjectsFromDB() {
     const container = document.getElementById('dynamicSubjectsList');
-    
     fetch('/get_subjects_api')
         .then(res => res.json())
         .then(data => {
@@ -772,7 +825,6 @@ function loadSubjectsFromDB() {
                     `;
                 });
                 leftHtml += '</div>';
-                
                 let rightHtml = '<div class="subjects-column">';
                 data.slice(midPoint).forEach((subject, index) => {
                     rightHtml += `
@@ -789,12 +841,10 @@ function loadSubjectsFromDB() {
             } else {
                 container.innerHTML = '<div class="text-center py-8 text-gray-400 col-span-2">No subjects available.</div>';
             }
-            hideLoading();
         })
         .catch(error => {
             console.error('Error loading subjects:', error);
             container.innerHTML = '<div class="text-center py-8 text-red-400 col-span-2">Error loading subjects. Please refresh.</div>';
-            hideLoading();
         });
 }
 
@@ -815,11 +865,13 @@ function showTimetable() {
         preloadImages(html);
         answerSection.classList.remove('hidden');
         answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        stopFaviconSpinner();
     });
 }
 
 document.getElementById('timetableLink')?.addEventListener('click', function(e) {
     e.preventDefault();
+    startFaviconSpinner();
     showTimetable();
 });
 
@@ -834,7 +886,6 @@ function displayAnswer(data) {
     const postedBy = data.posted_by || 'AnswerPoint Team';
     const pinCode = data.pin_code || '000';
     let answerHtml = data.answer_text || '<p class="text-gray-500 text-center py-4">No answer content available</p>';
-    
     const headerColor = data.header_color || '#000000';
     const textColor = data.text_color || '#000000';
     
@@ -842,16 +893,14 @@ function displayAnswer(data) {
     answerSubjectName.innerHTML = subjectName.toUpperCase();
     answerPostedBy.innerHTML = postedBy;
     answerPinValue.innerHTML = pinCode;
-    
     if (answerHtml && !answerHtml.includes('color:')) {
         answerHtml = `<div style="color: ${textColor};">${answerHtml}</div>`;
     }
     answerContent.innerHTML = answerHtml;
     preloadImages(answerHtml);
-    
     answerSection.classList.remove('hidden');
     answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    hideLoading();
+    stopFaviconSpinner(); // stop spinner after answer appears
 }
 
 function validateAndGetAnswer(pinInputElement) {
@@ -860,7 +909,6 @@ function validateAndGetAnswer(pinInputElement) {
     let value = pinInputElement.value.trim();
     value = value.replace(/[^0-9]/g, '');
     pinInputElement.value = value;
-
     if (value.length !== 3) {
         alert('❌ Please enter a valid 3-digit PIN (000-999)');
         pinInputElement.value = '';
@@ -882,17 +930,18 @@ function validateAndGetAnswer(pinInputElement) {
         return;
     }
 
-    // Show answer section with loading text (NO spinner inside answer content)
+    // Show answer section with blank content (no loading text at all) - just empty fields
     answerSection.classList.remove('hidden');
-    document.getElementById('answerSubjectName').innerHTML = 'LOADING...';
-    document.getElementById('answerPostedBy').innerHTML = 'Loading...';
+    document.getElementById('answerSubjectName').innerHTML = '—';
+    document.getElementById('answerPostedBy').innerHTML = '—';
     document.getElementById('answerPinValue').innerHTML = pinCode;
-    document.getElementById('answerContent').innerHTML = '';
+    document.getElementById('answerContent').innerHTML = '<div class="text-center text-gray-400 text-sm py-6"></div>';
     
-    showLoading();
+    // ONLY favicon spins — no page overlay loading
+    startFaviconSpinner();
     isLoading = true;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
     fetch('/get_answer', {
         method: 'POST',
@@ -903,7 +952,6 @@ function validateAndGetAnswer(pinInputElement) {
     .then(response => { clearTimeout(timeoutId); return response.json(); })
     .then(data => {
         isLoading = false;
-        hideLoading();
         if (data.success) {
             data.pin_code = pinCode;
             answerCache.set(pinCode, data);
@@ -911,6 +959,7 @@ function validateAndGetAnswer(pinInputElement) {
             currentAnswerPin = pinCode;
             displayAnswer(data);
         } else {
+            stopFaviconSpinner();
             answerSection.classList.add('hidden');
             if (errorBox) { errorBox.classList.remove('hidden'); errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
             pinInputElement.value = '';
@@ -921,7 +970,7 @@ function validateAndGetAnswer(pinInputElement) {
     })
     .catch(error => {
         isLoading = false;
-        hideLoading();
+        stopFaviconSpinner();
         console.error('Error:', error);
         alert('Network error. Please try again.');
         answerSection.classList.add('hidden');
@@ -930,6 +979,7 @@ function validateAndGetAnswer(pinInputElement) {
 }
 
 function goBackToHomepage() {
+    stopFaviconSpinner();
     const errorBox = document.getElementById('pinErrorBox');
     const subjectsSection = document.getElementById('subjectsSection');
     const answerSection = document.getElementById('answerSection');
@@ -958,6 +1008,7 @@ function restoreCachedAnswer() {
 
 function restrictToNumbers(event) { const input = event.target; input.value = input.value.replace(/[^0-9]/g, ''); }
 
+// Event listeners
 const headerPin = document.getElementById('pinInputHeader');
 const headerViewBtn = document.getElementById('viewAnswerHeaderBtn');
 if (headerViewBtn && headerPin) { headerPin.addEventListener('input', restrictToNumbers); headerViewBtn.addEventListener('click', () => validateAndGetAnswer(headerPin)); headerPin.addEventListener('keypress', (e) => { if (e.key === 'Enter') validateAndGetAnswer(headerPin); }); }
@@ -977,14 +1028,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const subjectsSection = document.getElementById('subjectsSection');
     const answerSection = document.getElementById('answerSection');
     const errorBox = document.getElementById('pinErrorBox');
-    
     if (subjectsSection) subjectsSection.style.display = 'block';
     if (answerSection) answerSection.classList.add('hidden');
     if (errorBox) errorBox.classList.add('hidden');
-    
-    showLoading();
     loadSubjectsFromDB();
     restoreCachedAnswer();
+    stopFaviconSpinner();
 });
 </script>
-{% endblock %}
+</body>
+</html>
