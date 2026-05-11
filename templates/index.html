@@ -157,41 +157,48 @@
         letter-spacing: 2px;
     }
     
-    /* Subjects List - Clean Two Column Design */
-    .subjects-container {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
+    /* SUBJECTS SECTION - Blue Outline Container */
+    .subjects-outer-container {
+        background: #f5f5f0;
+        border: 2px solid #3b82f6;
+        border-radius: 20px;
         overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    /* Inner Subjects Box - Very Bright White */
+    .subjects-inner-box {
+        background: #ffffff;
+        border-radius: 16px;
+        margin: 20px;
+        padding: 24px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     }
     
     .subjects-header {
-        background: #f9fafb;
-        border-bottom: 1px solid #e5e7eb;
-        padding: 12px 16px;
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e5e7eb;
     }
     
     .subjects-header h2 {
-        font-size: 14px;
+        font-size: 18px;
         font-weight: 700;
         color: #1f2937;
         margin: 0;
     }
     
-    .subjects-body {
-        padding: 16px;
-    }
-    
     .subjects-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 8px 32px;
+        gap: 12px 40px;
     }
     
     .subject-item {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         padding: 4px 0;
     }
     
@@ -215,39 +222,69 @@
         flex: 1;
     }
     
-    .hot-updates-section {
-        border-top: 1px solid #e5e7eb;
-        background: #f9fafb;
-        padding: 12px 16px;
+    /* HOT UPDATES - Separate Box with Off-white Outer and Bright White Inner */
+    .hotupdates-outer-container {
+        background: #f5f5f0;
+        border: 1px solid #f59e0b;
+        border-radius: 16px;
+        overflow: hidden;
+        margin-top: 20px;
     }
     
-    .hot-updates-header {
+    .hotupdates-inner-box {
+        background: #ffffff;
+        border-radius: 12px;
+        margin: 12px;
+        padding: 16px 20px;
+    }
+    
+    .hotupdates-header {
         display: flex;
         align-items: center;
-        gap: 6px;
-        margin-bottom: 6px;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #fee2e2;
     }
     
-    .hot-updates-header i {
+    .hotupdates-header i {
         color: #ef4444;
-        font-size: 12px;
+        font-size: 16px;
     }
     
-    .hot-updates-header span {
+    .hotupdates-header span {
         color: #dc2626;
-        font-weight: 700;
-        font-size: 10px;
+        font-weight: 800;
+        font-size: 13px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
     
-    .hot-updates-link {
-        color: #2563eb;
-        font-size: 12px;
-        text-decoration: none;
+    .hotupdates-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
     }
     
-    .hot-updates-link:hover {
+    .hotupdates-list li {
+        margin-bottom: 10px;
+        font-size: 13px;
+        color: #374151;
+    }
+    
+    .hotupdates-list li i {
+        color: #3b82f6;
+        margin-right: 6px;
+        font-size: 10px;
+    }
+    
+    .hotupdates-list a {
+        color: #2563eb;
+        text-decoration: none;
+        font-size: 13px;
+    }
+    
+    .hotupdates-list a:hover {
         color: #1d4ed8;
         text-decoration: underline;
     }
@@ -273,14 +310,24 @@
             font-size: 14px;
         }
         .subjects-grid {
-            gap: 6px 16px;
+            gap: 8px 20px;
         }
         .subject-number {
             font-size: 11px;
-            width: 22px;
+            width: 24px;
         }
         .subject-name {
             font-size: 11px;
+        }
+        .subjects-header h2 {
+            font-size: 14px;
+        }
+        .subjects-inner-box {
+            padding: 16px;
+            margin: 12px;
+        }
+        .hotupdates-inner-box {
+            padding: 12px 16px;
         }
     }
 </style>
@@ -458,24 +505,34 @@
         </div>
     </div>
 
-    <!-- SUBJECTS SECTION - Redesigned with Clean Two Column Layout -->
+    <!-- SUBJECTS SECTION - With Blue Outline like Answer Section -->
     <div id="subjectsSection">
-        <div class="subjects-container">
-            <div class="subjects-header">
-                <h2>📚 List of All Available WAEC and NECO Subjects</h2>
-            </div>
-            <div class="subjects-body">
+        <div class="subjects-outer-container">
+            <div class="subjects-inner-box">
+                <div class="subjects-header">
+                    <h2>📚 List of All Available WAEC and NECO Subjects</h2>
+                </div>
                 <div id="dynamicSubjectsList" class="subjects-grid"></div>
             </div>
-            <div class="hot-updates-section">
-                <div class="hot-updates-header">
+        </div>
+        
+        <!-- HOT UPDATES - Separate Box with Off-white Outer and Bright White Inner -->
+        <div class="hotupdates-outer-container">
+            <div class="hotupdates-inner-box">
+                <div class="hotupdates-header">
                     <i class="fas fa-fire"></i>
                     <span>HOT UPDATES</span>
                 </div>
-                <a href="#" id="timetableLink" class="hot-updates-link">
-                    <i class="fas fa-chevron-right text-[9px] mr-0.5"></i>
-                    {{ hot_updates_text }}
-                </a>
+                <ul class="hotupdates-list">
+                    <li>
+                        <i class="fas fa-chevron-right"></i>
+                        <a href="#" id="timetableLink">2026 WAEC MAY/JUNE FINAL EXAMINATION TIMETABLE FROM EXAMKING.NET</a>
+                    </li>
+                    <li>
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Testing Post</span>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
