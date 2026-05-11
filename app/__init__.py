@@ -5,7 +5,9 @@ import os
 db = SQLAlchemy()
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__,
+           template_folder='templates',
+           static_folder='static')
     
     # Get database URL from environment variable (Render) or use SQLite locally
     database_url = os.environ.get('DATABASE_URL')
