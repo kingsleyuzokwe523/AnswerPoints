@@ -5,9 +5,13 @@ import os
 db = SQLAlchemy()
 
 def create_app():
+    # Get the absolute path where this file (__init__.py) is located
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Create absolute paths for templates and static folders
     app = Flask(__name__,
-           template_folder='templates',
-           static_folder='static')
+                template_folder=os.path.join(base_dir, 'templates'),
+                static_folder=os.path.join(base_dir, 'static'))
     
     # Get database URL from environment variable (Render) or use SQLite locally
     database_url = os.environ.get('DATABASE_URL')
@@ -41,5 +45,11 @@ def create_app():
     with app.app_context():
         db.create_all()
         print("Database tables created/verified")
+    
+    # Debug: Print template folder location
+    print(f"🔍 Templates folder path: {app.template_folder}")
+    print(f"🔍 Templates folder exists: {os.path.exists(app.template_folder)}")
+    if os.path.exists(app.template_folder):
+        print(f"📁 Files in templates: {os.listdir(app.template_folder)}")
     
     return app
