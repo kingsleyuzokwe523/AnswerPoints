@@ -164,7 +164,7 @@
         border-radius: 20px;
         overflow: hidden;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-        margin-bottom: 20px;
+        margin-bottom: 0;
     }
     
     /* Inner Subjects Box - Very Bright White */
@@ -223,19 +223,20 @@
         flex: 1;
     }
     
-    /* HOT UPDATES - Separate Box */
+    /* HOT UPDATES - Separate Box (Closed) - NO GAP */
     .hotupdates-outer-container {
         background: #f5f5f0;
-        border: 1px solid #f59e0b;
-        border-radius: 16px;
+        border: 2px solid #f59e0b;
+        border-radius: 20px;
         overflow: hidden;
-        margin-bottom: 20px;
+        margin-top: 0;
+        margin-bottom: 0;
     }
     
     .hotupdates-inner-box {
         background: #ffffff;
-        border-radius: 12px;
-        margin: 12px;
+        border-radius: 16px;
+        margin: 20px;
         padding: 16px 20px;
     }
     
@@ -243,9 +244,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 12px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #fee2e2;
+        margin-bottom: 0;
     }
     
     .hotupdates-header i {
@@ -261,18 +260,35 @@
         letter-spacing: 0.5px;
     }
     
+    /* Timetable Link - Separate Box (Closed) - NO GAP */
+    .timetable-outer-container {
+        background: #f5f5f0;
+        border: 2px solid #3b82f6;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-top: 0;
+        margin-bottom: 20px;
+    }
+    
+    .timetable-inner-box {
+        background: #ffffff;
+        border-radius: 16px;
+        margin: 20px;
+        padding: 16px 20px;
+    }
+    
     .timetable-link {
         display: block;
         color: #2563eb;
         text-decoration: none;
         font-size: 13px;
-        padding: 8px 0;
+        font-weight: 500;
     }
     
     .timetable-link i {
         color: #3b82f6;
-        margin-right: 6px;
-        font-size: 10px;
+        margin-right: 8px;
+        font-size: 11px;
     }
     
     .timetable-link:hover {
@@ -284,7 +300,7 @@
     .need-help-container {
         background: #1f2937;
         border: 2px solid #f59e0b;
-        border-radius: 16px;
+        border-radius: 20px;
         overflow: hidden;
         margin-top: 0;
     }
@@ -363,8 +379,9 @@
             padding: 16px;
             margin: 12px;
         }
-        .hotupdates-inner-box {
+        .hotupdates-inner-box, .timetable-inner-box {
             padding: 12px 16px;
+            margin: 12px;
         }
     }
 </style>
@@ -542,8 +559,9 @@
         </div>
     </div>
 
-    <!-- SUBJECTS SECTION - With Blue Outline covering everything until Need Help -->
+    <!-- SUBJECTS SECTION - All boxes connected with NO gaps -->
     <div id="subjectsSection">
+        <!-- Box 1: Subjects List (Blue outline) -->
         <div class="subjects-outer-container">
             <div class="subjects-inner-box">
                 <div class="subjects-header">
@@ -553,13 +571,19 @@
             </div>
         </div>
         
-        <!-- HOT UPDATES - Separate Box with only Timetable -->
+        <!-- Box 2: HOT UPDATES (Orange outline - CLOSED box) -->
         <div class="hotupdates-outer-container">
             <div class="hotupdates-inner-box">
                 <div class="hotupdates-header">
                     <i class="fas fa-fire"></i>
                     <span>HOT UPDATES</span>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Box 3: Timetable Link (Blue outline - CLOSED box) -->
+        <div class="timetable-outer-container">
+            <div class="timetable-inner-box">
                 <a href="#" id="timetableLink" class="timetable-link">
                     <i class="fas fa-chevron-right"></i>
                     2026 WAEC MAY/JUNE FINAL EXAMINATION TIMETABLE FROM EXAMKING.NET
@@ -567,7 +591,7 @@
             </div>
         </div>
         
-        <!-- Need Help Section - Dark Grey with Orange Text -->
+        <!-- Box 4: Need Help Section - Dark Grey with Orange Text -->
         <div class="need-help-container">
             <div class="need-help-inner">
                 <div class="need-help-title">Need Help? We're Here for You!</div>
