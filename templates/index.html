@@ -2,9 +2,37 @@
 
 {% block content %}
 <style>
-    /* Hide main content initially */
+    /* Hide main content initially - NO BLACK FLASH */
+    body {
+        background: #f5f5f5;
+    }
     #mainContent {
         display: none;
+    }
+    
+    /* Loading overlay - only favicon shows loading, no black flash */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #f5f5f5;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #e5e7eb;
+        border-top-color: #28a745;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
     }
     
     .answer-text {
@@ -37,35 +65,10 @@
     input[type="tel"] {
         -moz-appearance: textfield;
     }
-    #pinErrorBox {
-        animation: shake 0.4s ease-in-out;
-    }
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-4px); }
-        75% { transform: translateX(4px); }
-    }
-    @media (min-width: 480px) {
-        .xs\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .xs\:flex-row { flex-direction: row; }
-    }
-    @media (max-width: 479px) {
-        .xs\:grid-cols-2 { grid-template-columns: 1fr; }
-        .xs\:flex-row { flex-direction: column; }
-    }
-    .break-words {
-        word-break: break-word;
-        overflow-wrap: break-word;
-        max-width: 100%;
-    }
-    .min-w-[100px] {
-        min-width: 100px;
-    }
-    .hidden {
-        display: none;
-    }
-    #answerContent {
-        min-height: 100px;
+    @keyframes loadingMove {
+        0% { width: 10%; margin-left: 0%; }
+        50% { width: 40%; margin-left: 30%; }
+        100% { width: 10%; margin-left: 80%; }
     }
     .sticky-top {
         position: sticky;
@@ -77,28 +80,15 @@
         bottom: 0;
         z-index: 50;
     }
-    .fa-spinner {
-        animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    .practical-badge {
-        background: #dbeafe;
-        color: #1e40af;
-        font-size: 9px;
-        padding: 2px 6px;
-        border-radius: 10px;
-        margin-left: 5px;
-        white-space: nowrap;
-    }
-    @keyframes loadingMove {
-        0% { width: 10%; margin-left: 0%; }
-        50% { width: 40%; margin-left: 30%; }
-        100% { width: 10%; margin-left: 80%; }
+    .hidden {
+        display: none;
     }
 </style>
+
+<!-- Loading Overlay - Only shows until page loads -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+</div>
 
 <!-- ENTIRE MAIN CONTENT - Initially hidden -->
 <div id="mainContent">
@@ -198,7 +188,7 @@
         </div>
     </div>
 
-    <!-- ANSWER DISPLAY SECTION - NEW DESIGN -->
+    <!-- ANSWER DISPLAY SECTION -->
     <div id="answerSection" class="hidden mb-4 sm:mb-5">
         <div class="bg-white border-2 border-blue-500 rounded-lg shadow-lg overflow-hidden">
             
@@ -209,21 +199,20 @@
                 </button>
             </div>
             
-            <!-- White Box with Blue Outline -->
             <div class="p-4 md:p-6">
-                <!-- Subject Name -->
-                <h1 class="text-2xl md:text-3xl font-bold text-center text-black uppercase mb-4" id="answerSubjectName">MATHEMATICS</h1>
+                <!-- Subject Name - Shows from PIN data -->
+                <h1 class="text-2xl md:text-3xl font-bold text-center text-black uppercase mb-4" id="answerSubjectName">-</h1>
                 
                 <!-- Small Box: Posted by & PIN -->
                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
                     <div class="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-6">
                         <div>
                             <span class="font-bold text-green-600">Posted by:</span>
-                            <span class="text-black ml-1" id="answerPostedBy">AnswerPoint Team</span>
+                            <span class="text-black ml-1" id="answerPostedBy">-</span>
                         </div>
                         <div>
                             <span class="font-bold text-green-600">PIN:</span>
-                            <span class="text-black ml-1" id="answerPinValue">000</span>
+                            <span class="text-black ml-1" id="answerPinValue">-</span>
                         </div>
                     </div>
                 </div>
@@ -235,7 +224,7 @@
                 
                 <!-- Answer Loading Text -->
                 <div class="text-center my-3">
-                    <span class="text-red-600 font-bold text-sm" id="answerLoadingText">Answer Loading...</span>
+                    <span class="text-red-600 font-bold text-sm">Answer Loading...</span>
                 </div>
                 
                 <!-- Separator -->
@@ -244,9 +233,7 @@
                 </div>
                 
                 <!-- Main Answers Show Here -->
-                <div id="answerContent" class="answer-text py-4">
-                    <!-- Answer will appear here -->
-                </div>
+                <div id="answerContent" class="answer-text py-4"></div>
                 
                 <!-- Separator -->
                 <div class="text-center my-4">
@@ -276,7 +263,6 @@
                 <h2 class="text-sm sm:text-base font-bold mb-2 sm:mb-3 text-gray-800 text-center">📚 List of All Available Subjects</h2>
                 <div id="dynamicSubjectsList" class="grid grid-cols-1 xs:grid-cols-2 gap-1.5 sm:gap-2"></div>
             </div>
-
             <div class="border-t border-gray-200 p-2 sm:p-3">
                 <div class="bg-gray-50 border border-gray-200 p-2 sm:p-3 rounded">
                     <div class="flex items-center gap-1.5 mb-1">
@@ -331,6 +317,7 @@ const answerCache = new Map();
 function loadSubjectsFromDB() {
     const container = document.getElementById('dynamicSubjectsList');
     const mainContent = document.getElementById('mainContent');
+    const loadingOverlay = document.getElementById('loadingOverlay');
     
     fetch('/get_subjects_api')
         .then(res => res.json())
@@ -349,20 +336,18 @@ function loadSubjectsFromDB() {
                 rightHtml += '</div>';
                 container.innerHTML = leftHtml + rightHtml;
             } else {
-                container.innerHTML = '<div class="text-center py-8 text-gray-400 col-span-2">No subjects available. Admin can add subjects.</div>';
+                container.innerHTML = '<div class="text-center py-8 text-gray-400 col-span-2">No subjects available.</div>';
             }
             
-            // Show the page after subjects are loaded
-            if (mainContent) {
-                mainContent.style.display = 'block';
-            }
+            // Hide loading overlay and show page
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+            if (mainContent) mainContent.style.display = 'block';
         })
         .catch(error => {
             console.error('Error loading subjects:', error);
             container.innerHTML = '<div class="text-center py-8 text-red-400 col-span-2">Error loading subjects. Please refresh.</div>';
-            if (mainContent) {
-                mainContent.style.display = 'block';
-            }
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+            if (mainContent) mainContent.style.display = 'block';
         });
 }
 
@@ -373,22 +358,16 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Show timetable
 function showTimetable() {
     const answerSection = document.getElementById('answerSection');
     const subjectsSection = document.getElementById('subjectsSection');
     const answerContent = document.getElementById('answerContent');
-    
-    if (!answerContent) return;
     if (subjectsSection) subjectsSection.style.display = 'none';
-
-    fetch('/get_timetable_html')
-        .then(res => res.text())
-        .then(html => {
-            answerContent.innerHTML = html;
-            answerSection.classList.remove('hidden');
-            answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
+    fetch('/get_timetable_html').then(res => res.text()).then(html => {
+        answerContent.innerHTML = html;
+        answerSection.classList.remove('hidden');
+        answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
 }
 
 document.getElementById('timetableLink')?.addEventListener('click', function(e) {
@@ -396,23 +375,26 @@ document.getElementById('timetableLink')?.addEventListener('click', function(e) 
     showTimetable();
 });
 
-function displayAnswer(data, answerSection, answerContent, answerTypeLabel, pinInputElement) {
-    let displayHtml = '';
-    if (data.answer_text && data.answer_text.trim()) {
-        displayHtml = data.answer_text;
-    } else {
-        displayHtml = '<p class="text-gray-500 text-sm text-center py-4">No answer content available</p>';
-    }
+function displayAnswer(data) {
+    const answerSection = document.getElementById('answerSection');
+    const answerContent = document.getElementById('answerContent');
+    const answerSubjectName = document.getElementById('answerSubjectName');
+    const answerPostedBy = document.getElementById('answerPostedBy');
+    const answerPinValue = document.getElementById('answerPinValue');
     
-    // Update the answer display area
-    document.getElementById('answerSubjectName').innerHTML = (data.subject_name || 'SUBJECT').toUpperCase();
-    document.getElementById('answerPostedBy').innerHTML = data.posted_by || 'AnswerPoint Team';
-    document.getElementById('answerPinValue').innerHTML = data.pin_code || '000';
-    document.getElementById('answerContent').innerHTML = displayHtml;
+    // Get data from PIN response
+    const subjectName = data.subject_name || data.subject || 'Unknown';
+    const postedBy = data.posted_by || 'AnswerPoint Team';
+    const pinCode = data.pin_code || '000';
+    const answerHtml = data.answer_text || '<p class="text-gray-500 text-center py-4">No answer content available</p>';
     
-    if (answerTypeLabel) answerTypeLabel.innerHTML = '✓ ANSWER';
+    // Update display
+    answerSubjectName.innerHTML = subjectName.toUpperCase();
+    answerPostedBy.innerHTML = postedBy;
+    answerPinValue.innerHTML = pinCode;
+    answerContent.innerHTML = answerHtml;
+    
     answerSection.classList.remove('hidden');
-    if (pinInputElement) pinInputElement.value = '';
     answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -423,33 +405,33 @@ function validateAndGetAnswer(pinInputElement) {
     value = value.replace(/[^0-9]/g, '');
     pinInputElement.value = value;
 
-    if (!pinInputElement.checkValidity() || value.length !== 3) {
+    if (value.length !== 3) {
         alert('❌ Please enter a valid 3-digit PIN (000-999)');
         pinInputElement.value = '';
         pinInputElement.focus();
         return;
     }
 
-    const pinCode = pinInputElement.value.trim();
+    const pinCode = value;
     const answerSection = document.getElementById('answerSection');
     const subjectsSection = document.getElementById('subjectsSection');
     const errorBox = document.getElementById('pinErrorBox');
-    const answerContent = document.getElementById('answerContent');
-    const answerTypeLabel = document.getElementById('answerTypeLabel');
 
     if (subjectsSection) subjectsSection.style.display = 'none';
     if (errorBox) errorBox.classList.add('hidden');
 
     if (answerCache.has(pinCode)) {
-        displayAnswer(answerCache.get(pinCode), answerSection, answerContent, answerTypeLabel, pinInputElement);
+        displayAnswer(answerCache.get(pinCode));
         currentAnswerPin = pinCode;
         return;
     }
 
     if (answerSection) {
         answerSection.classList.remove('hidden');
-        if (answerContent) answerContent.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-blue-600 text-xl"></i></div>';
-        if (answerTypeLabel) answerTypeLabel.innerHTML = '⏳';
+        document.getElementById('answerContent').innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-blue-600 text-xl"></i></div>';
+        document.getElementById('answerSubjectName').innerHTML = 'LOADING...';
+        document.getElementById('answerPostedBy').innerHTML = 'Loading...';
+        document.getElementById('answerPinValue').innerHTML = pinCode;
     }
     
     isLoading = true;
@@ -462,15 +444,15 @@ function validateAndGetAnswer(pinInputElement) {
         body: 'pin_code=' + pinCode,
         signal: controller.signal
     })
-    .then(response => { clearTimeout(timeoutId); if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.json(); })
+    .then(response => { clearTimeout(timeoutId); return response.json(); })
     .then(data => {
         isLoading = false;
         if (data.success) {
             data.pin_code = pinCode;
             answerCache.set(pinCode, data);
-            try { sessionStorage.setItem(`answer_${pinCode}`, JSON.stringify({ answer_text: data.answer_text, subject_name: data.subject_name, posted_by: data.posted_by, timestamp: Date.now() })); sessionStorage.setItem('current_viewing_pin', pinCode); } catch(e) {}
+            try { sessionStorage.setItem(`answer_${pinCode}`, JSON.stringify(data)); sessionStorage.setItem('current_viewing_pin', pinCode); } catch(e) {}
             currentAnswerPin = pinCode;
-            displayAnswer(data, answerSection, answerContent, answerTypeLabel, pinInputElement);
+            displayAnswer(data);
         } else {
             answerSection.classList.add('hidden');
             if (errorBox) { errorBox.classList.remove('hidden'); const errorPinInput = document.getElementById('pinInputError'); if (errorPinInput) errorPinInput.value = ''; errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
@@ -483,8 +465,7 @@ function validateAndGetAnswer(pinInputElement) {
         isLoading = false;
         console.error('Error:', error);
         answerSection.classList.remove('hidden');
-        answerContent.innerHTML = `<div class="text-center py-8"><i class="fas fa-${error.name === 'AbortError' ? 'clock' : 'wifi'} text-${error.name === 'AbortError' ? 'orange' : 'red'}-500 text-2xl mb-2"></i><p class="text-gray-600">${error.name === 'AbortError' ? 'Request timeout. Please try again.' : 'Network error. Please try again.'}</p></div>`;
-        answerTypeLabel.innerHTML = '⚠️ ERROR';
+        document.getElementById('answerContent').innerHTML = '<div class="text-center py-8"><i class="fas fa-wifi text-red-500 text-2xl mb-2"></i><p class="text-gray-600">Network error. Please try again.</p></div>';
         setTimeout(() => { if (answerSection) answerSection.classList.add('hidden'); }, 5000);
     });
 }
@@ -493,16 +474,14 @@ function refreshAnswer() {
     if (currentAnswerPin) {
         const answerSection = document.getElementById('answerSection');
         const answerContent = document.getElementById('answerContent');
-        const answerTypeLabel = document.getElementById('answerTypeLabel');
         if (answerCache.has(currentAnswerPin)) {
-            displayAnswer(answerCache.get(currentAnswerPin), answerSection, answerContent, answerTypeLabel, null);
+            displayAnswer(answerCache.get(currentAnswerPin));
             return;
         }
         answerContent.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-blue-600 text-xl"></i></div>';
-        answerTypeLabel.innerHTML = '⟳';
         fetch('/get_answer', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'pin_code=' + currentAnswerPin })
             .then(response => response.json())
-            .then(data => { if (data.success) { answerCache.set(currentAnswerPin, data); displayAnswer(data, answerSection, answerContent, answerTypeLabel, null); } else { answerContent.innerHTML = '<p class="text-red-500 text-center py-4">Answer no longer available.</p>'; answerTypeLabel.innerHTML = '❌ NOT FOUND'; currentAnswerPin = null; } });
+            .then(data => { if (data.success) { answerCache.set(currentAnswerPin, data); displayAnswer(data); } });
     }
 }
 
@@ -524,8 +503,6 @@ function goBackToHomepage() {
     if (errorBox) errorBox.classList.add('hidden');
     if (answerSection) answerSection.classList.add('hidden');
     if (subjectsSection) subjectsSection.style.display = 'block';
-    const errorPinInput = document.getElementById('pinInputError');
-    if (errorPinInput) errorPinInput.value = '';
     currentAnswerPin = null;
     sessionStorage.removeItem('current_viewing_pin');
 }
@@ -537,13 +514,10 @@ function restoreCachedAnswer() {
         if (cached) {
             try {
                 const data = JSON.parse(cached);
-                if (Date.now() - data.timestamp < 3600000) {
-                    answerCache.set(savedPin, data);
-                    const subjectsSection = document.getElementById('subjectsSection');
-                    const answerSection = document.getElementById('answerSection');
-                    if (subjectsSection) subjectsSection.style.display = 'none';
-                    if (answerSection) { displayAnswer(data, answerSection, document.getElementById('answerContent'), document.getElementById('answerTypeLabel'), null); currentAnswerPin = savedPin; }
-                }
+                const subjectsSection = document.getElementById('subjectsSection');
+                const answerSection = document.getElementById('answerSection');
+                if (subjectsSection) subjectsSection.style.display = 'none';
+                if (answerSection) { displayAnswer(data); currentAnswerPin = savedPin; }
             } catch(e) {}
         }
     }
@@ -558,7 +532,7 @@ if (headerViewBtn && headerPin) { headerPin.addEventListener('input', restrictTo
 
 const errorPinInput = document.getElementById('pinInputError');
 const errorViewBtn = document.getElementById('viewAnswerErrorBtn');
-if (errorViewBtn && errorPinInput) { errorPinInput.addEventListener('input', function(e) { this.value = this.value.replace(/[^0-9]/g, ''); }); errorViewBtn.addEventListener('click', () => validateAndGetAnswer(errorPinInput)); errorPinInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') validateAndGetAnswer(errorPinInput); }); }
+if (errorViewBtn && errorPinInput) { errorPinInput.addEventListener('input', restrictToNumbers); errorViewBtn.addEventListener('click', () => validateAndGetAnswer(errorPinInput)); errorPinInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') validateAndGetAnswer(errorPinInput); }); }
 
 const footerPin = document.getElementById('pinInputFooter');
 const footerViewBtn = document.getElementById('viewAnswerFooterBtn');
@@ -574,7 +548,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorBox = document.getElementById('pinErrorBox');
     const mainContent = document.getElementById('mainContent');
     
-    // Hide main content until subjects are loaded
     if (mainContent) mainContent.style.display = 'none';
     if (subjectsSection) subjectsSection.style.display = 'block';
     if (answerSection) answerSection.classList.add('hidden');
