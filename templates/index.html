@@ -67,35 +67,85 @@
     
     /* Outer Answer Container - Off-white/Dim White */
     .answer-outer-container {
-        background: #f0f0f0;
+        background: #f5f5f0;
         border: 2px solid #3b82f6;
-        border-radius: 16px;
+        border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     }
     
     /* Inner Answer Box - Very Bright White */
     .answer-inner-box {
         background: #ffffff;
-        border-radius: 12px;
+        border-radius: 16px;
         margin: 20px;
-        padding: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        padding: 24px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     }
     
-    /* Subject heading inside outer container */
+    /* Subject heading */
     .answer-subject {
         color: #000000;
-        margin-top: 10px;
+        margin-top: 15px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
     }
     
-    /* Info card styling */
-    .info-card {
-        background: #f9f9f9;
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        padding: 15px 20px;
-        margin: 0 20px;
+    /* Enhanced Info Card - Modern Design */
+    .info-card-modern {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 16px;
+        padding: 4px;
+        margin: 15px 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+    
+    .info-card-inner {
+        background: white;
+        border-radius: 14px;
+        padding: 16px 24px;
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+    
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+    }
+    
+    .info-label {
+        font-weight: 700;
+        color: #28a745;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-weight: 600;
+        color: #1a1a2e;
+        font-size: 15px;
+        background: #f8f9fa;
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+    
+    .info-divider {
+        width: 1px;
+        height: 40px;
+        background: linear-gradient(to bottom, #e0e0e0, #b0b0b0, #e0e0e0);
     }
     
     /* Separator */
@@ -104,6 +154,29 @@
         margin: 15px 0;
         color: #cbd5e1;
         font-size: 12px;
+        letter-spacing: 2px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 640px) {
+        .info-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 8px;
+        }
+        .info-divider {
+            width: 80%;
+            height: 1px;
+            margin: 10px auto;
+        }
+        .info-card-inner {
+            padding: 16px;
+        }
+        .info-icon {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+        }
     }
 </style>
 
@@ -150,7 +223,7 @@
             </a>
             <button id="heroEnterPinBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 text-center shadow transition text-xs sm:text-sm flex items-center justify-center gap-1.5 rounded-lg w-full sm:w-auto">
                 <i class="fas fa-key text-xs sm:text-sm"></i><span>Enter Pin</span>
-            </a>
+            </button>
             <a href="/admin/login" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 text-center shadow transition text-xs sm:text-sm flex items-center justify-center gap-1.5 rounded-lg w-full sm:w-auto">
                 <i class="fas fa-lock text-xs sm:text-sm"></i><span>Admin Login</span>
             </a>
@@ -202,37 +275,55 @@
         </div>
     </div>
 
-    <!-- ANSWER DISPLAY SECTION - Off-white Outer, Bright White Inner -->
+    <!-- ANSWER DISPLAY SECTION - Enhanced Design -->
     <div id="answerSection" class="hidden mb-4 sm:mb-5">
         <div class="answer-outer-container">
             
             <!-- Refresh Button at Top -->
             <div class="text-center pt-4 pb-2">
-                <button onclick="window.location.reload()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition flex items-center gap-2 mx-auto">
+                <button onclick="window.location.reload()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition flex items-center gap-2 mx-auto shadow-md">
                     <i class="fas fa-sync-alt"></i> Refresh Page
                 </button>
             </div>
             
-            <!-- Subject Name - inside outer container -->
+            <!-- Subject Name -->
             <h1 class="text-2xl md:text-3xl font-bold text-center uppercase answer-subject" id="answerSubjectName">-</h1>
             
-            <!-- Info Card (Posted by & PIN) -->
-            <div class="info-card">
-                <div class="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-6">
-                    <div>
-                        <span class="font-bold" style="color: #28a745;">Posted by:</span>
-                        <span class="text-black ml-1" id="answerPostedBy">-</span>
-                    </div>
-                    <div>
-                        <span class="font-bold" style="color: #28a745;">PIN:</span>
-                        <span class="text-black ml-1" id="answerPinValue">-</span>
+            <!-- ENHANCED INFO CARD - Modern Design -->
+            <div class="info-card-modern">
+                <div class="info-card-inner">
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8">
+                        <!-- Posted By Section -->
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-user-edit"></i>
+                            </div>
+                            <div>
+                                <div class="info-label">POSTED BY</div>
+                                <div class="info-value" id="answerPostedBy">-</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Divider -->
+                        <div class="info-divider"></div>
+                        
+                        <!-- PIN Section -->
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div>
+                                <div class="info-label">PIN CODE</div>
+                                <div class="info-value" id="answerPinValue">-</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- Separator -->
             <div class="separator">
-                <span>====================</span>
+                <span>═══════════════════════════════════════</span>
             </div>
             
             <!-- INNER BRIGHT WHITE BOX - Where answers live -->
@@ -242,12 +333,12 @@
             
             <!-- Separator -->
             <div class="separator">
-                <span>====================</span>
+                <span>═══════════════════════════════════════</span>
             </div>
             
             <!-- More Answers Loading Text -->
             <div class="text-center my-3">
-                <span class="text-red-600 font-bold text-sm">More Answers Loading...</span>
+                <span class="text-red-600 font-bold text-sm"><i class="fas fa-spinner fa-spin mr-2"></i> More Answers Loading...</span>
             </div>
             
             <!-- Moving Green Status Bar -->
@@ -255,7 +346,9 @@
                 <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                     <div class="bg-green-600 h-2 rounded-full" style="width: 30%; animation: loadingMove 1.5s ease-in-out infinite;"></div>
                 </div>
-                <p class="text-center text-gray-400 italic text-xs mt-3">Please refresh this page every few minutes to see new updates.</p>
+                <p class="text-center text-gray-400 italic text-xs mt-3">
+                    <i class="fas fa-sync-alt mr-1"></i> Please refresh this page every few minutes to see new updates.
+                </p>
             </div>
         </div>
     </div>
@@ -414,7 +507,6 @@ function displayAnswer(data) {
     const pinCode = data.pin_code || '000';
     let answerHtml = data.answer_text || '<p class="text-gray-500 text-center py-4">No answer content available</p>';
     
-    // Apply header color from admin settings
     const headerColor = data.header_color || '#000000';
     const textColor = data.text_color || '#1f2937';
     
@@ -423,7 +515,6 @@ function displayAnswer(data) {
     answerPostedBy.innerHTML = postedBy;
     answerPinValue.innerHTML = pinCode;
     
-    // Apply text color to answer content (preserve admin's chosen color)
     if (answerHtml && !answerHtml.includes('color:')) {
         answerHtml = `<div style="color: ${textColor};">${answerHtml}</div>`;
     }
