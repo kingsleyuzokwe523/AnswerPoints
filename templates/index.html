@@ -157,6 +157,101 @@
         letter-spacing: 2px;
     }
     
+    /* Subjects List - Clean Two Column Design */
+    .subjects-container {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .subjects-header {
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 12px 16px;
+    }
+    
+    .subjects-header h2 {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+    }
+    
+    .subjects-body {
+        padding: 16px;
+    }
+    
+    .subjects-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 32px;
+    }
+    
+    .subject-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+    }
+    
+    .subject-number {
+        color: #9ca3af;
+        font-size: 13px;
+        width: 28px;
+        flex-shrink: 0;
+    }
+    
+    .subject-icon {
+        color: #2563eb;
+        font-size: 12px;
+        width: 16px;
+        flex-shrink: 0;
+    }
+    
+    .subject-name {
+        color: #374151;
+        font-size: 13px;
+        flex: 1;
+    }
+    
+    .hot-updates-section {
+        border-top: 1px solid #e5e7eb;
+        background: #f9fafb;
+        padding: 12px 16px;
+    }
+    
+    .hot-updates-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 6px;
+    }
+    
+    .hot-updates-header i {
+        color: #ef4444;
+        font-size: 12px;
+    }
+    
+    .hot-updates-header span {
+        color: #dc2626;
+        font-weight: 700;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .hot-updates-link {
+        color: #2563eb;
+        font-size: 12px;
+        text-decoration: none;
+    }
+    
+    .hot-updates-link:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+    }
+    
     /* Responsive */
     @media (max-width: 640px) {
         .info-item {
@@ -176,6 +271,16 @@
             width: 32px;
             height: 32px;
             font-size: 14px;
+        }
+        .subjects-grid {
+            gap: 6px 16px;
+        }
+        .subject-number {
+            font-size: 11px;
+            width: 22px;
+        }
+        .subject-name {
+            font-size: 11px;
         }
     }
 </style>
@@ -353,24 +458,24 @@
         </div>
     </div>
 
-    <!-- SUBJECTS SECTION -->
+    <!-- SUBJECTS SECTION - Redesigned with Clean Two Column Layout -->
     <div id="subjectsSection">
-        <div class="bg-white border border-gray-300 shadow rounded-lg">
-            <div class="p-2 sm:p-3">
-                <h2 class="text-sm sm:text-base font-bold mb-2 sm:mb-3 text-gray-800 text-center">📚 List of All Available Subjects</h2>
-                <div id="dynamicSubjectsList" class="grid grid-cols-1 xs:grid-cols-2 gap-1.5 sm:gap-2"></div>
+        <div class="subjects-container">
+            <div class="subjects-header">
+                <h2>📚 List of All Available WAEC and NECO Subjects</h2>
             </div>
-            <div class="border-t border-gray-200 p-2 sm:p-3">
-                <div class="bg-gray-50 border border-gray-200 p-2 sm:p-3 rounded">
-                    <div class="flex items-center gap-1.5 mb-1">
-                        <i class="fas fa-fire text-orange-500 text-xs"></i>
-                        <span class="text-orange-600 font-bold text-[10px] sm:text-xs uppercase tracking-wider">HOT UPDATES</span>
-                    </div>
-                    <a href="#" id="timetableLink" class="text-blue-600 hover:text-blue-800 hover:underline transition text-xs sm:text-sm font-normal inline-block">
-                        <i class="fas fa-chevron-right text-[9px] sm:text-xs mr-0.5"></i>
-                        {{ hot_updates_text }}
-                    </a>
+            <div class="subjects-body">
+                <div id="dynamicSubjectsList" class="subjects-grid"></div>
+            </div>
+            <div class="hot-updates-section">
+                <div class="hot-updates-header">
+                    <i class="fas fa-fire"></i>
+                    <span>HOT UPDATES</span>
                 </div>
+                <a href="#" id="timetableLink" class="hot-updates-link">
+                    <i class="fas fa-chevron-right text-[9px] mr-0.5"></i>
+                    {{ hot_updates_text }}
+                </a>
             </div>
         </div>
     </div>
@@ -450,14 +555,29 @@ function loadSubjectsFromDB() {
         .then(data => {
             if (data && data.length > 0) {
                 const midPoint = Math.ceil(data.length / 2);
-                let leftHtml = '<div class="space-y-0.5">';
+                let leftHtml = '<div class="subjects-column">';
                 data.slice(0, midPoint).forEach((subject, index) => {
-                    leftHtml += `<div class="flex items-center gap-1 sm:gap-1.5 py-0.5"><span class="text-gray-500 text-[10px] sm:text-xs w-5">${index + 1}.</span><i class="fas ${subject.icon || 'fa-book'} text-blue-600 text-[10px] sm:text-xs"></i><span class="text-gray-700 text-[10px] sm:text-xs break-words">${escapeHtml(subject.name)}</span>${subject.has_practical ? '<span class="practical-badge">Practical</span>' : ''}</div>`;
+                    leftHtml += `
+                        <div class="subject-item">
+                            <span class="subject-number">${index + 1}.</span>
+                            <i class="fas ${subject.icon || 'fa-book'} subject-icon"></i>
+                            <span class="subject-name">${escapeHtml(subject.name)}</span>
+                            ${subject.has_practical ? '<span class="practical-badge">Practical</span>' : ''}
+                        </div>
+                    `;
                 });
                 leftHtml += '</div>';
-                let rightHtml = '<div class="space-y-0.5">';
+                
+                let rightHtml = '<div class="subjects-column">';
                 data.slice(midPoint).forEach((subject, index) => {
-                    rightHtml += `<div class="flex items-center gap-1 sm:gap-1.5 py-0.5"><span class="text-gray-500 text-[10px] sm:text-xs w-5">${midPoint + index + 1}.</span><i class="fas ${subject.icon || 'fa-book'} text-blue-600 text-[10px] sm:text-xs"></i><span class="text-gray-700 text-[10px] sm:text-xs break-words">${escapeHtml(subject.name)}</span>${subject.has_practical ? '<span class="practical-badge">Practical</span>' : ''}</div>`;
+                    rightHtml += `
+                        <div class="subject-item">
+                            <span class="subject-number">${midPoint + index + 1}.</span>
+                            <i class="fas ${subject.icon || 'fa-book'} subject-icon"></i>
+                            <span class="subject-name">${escapeHtml(subject.name)}</span>
+                            ${subject.has_practical ? '<span class="practical-badge">Practical</span>' : ''}
+                        </div>
+                    `;
                 });
                 rightHtml += '</div>';
                 container.innerHTML = leftHtml + rightHtml;
