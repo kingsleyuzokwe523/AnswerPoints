@@ -223,19 +223,19 @@
         flex: 1;
     }
     
-    /* HOT UPDATES header inside the same continuous box */
-    .hotupdates-section {
-        margin-top: 10px;
+    /* Box inside the inner bright white for HOT UPDATES */
+    .hotupdates-inner-box {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        padding: 12px 16px;
         margin-bottom: 15px;
-        padding-top: 10px;
-        border-top: 1px solid #e5e7eb;
     }
     
     .hotupdates-header {
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 12px;
     }
     
     .hotupdates-header i {
@@ -251,15 +251,21 @@
         letter-spacing: 0.5px;
     }
     
-    /* Timetable link */
+    /* Box inside the inner bright white for Timetable link */
+    .timetable-inner-box {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+    }
+    
     .timetable-link {
         display: block;
         color: #2563eb;
         text-decoration: none;
         font-size: 13px;
         font-weight: 500;
-        margin-bottom: 20px;
-        padding: 5px 0;
     }
     
     .timetable-link i {
@@ -273,13 +279,12 @@
         text-decoration: underline;
     }
     
-    /* Need Help Section - Dark Grey with Orange Text (inside same box, but different colors) */
+    /* Need Help Section - Dark Grey with Orange Text */
     .need-help-section {
         background: #1f2937;
         border-radius: 12px;
         padding: 20px;
         text-align: center;
-        margin-top: 10px;
     }
     
     .need-help-title {
@@ -313,61 +318,219 @@
         border-top: 1px solid #374151;
     }
     
-    /* Responsive */
+    /* ========== MOBILE VIEW FIXES ========== */
     @media (max-width: 640px) {
+        /* Hero buttons mobile fix */
+        .hero-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .hero-buttons a, 
+        .hero-buttons button {
+            width: 100%;
+            justify-content: center;
+            padding: 10px 16px;
+            font-size: 14px;
+        }
+        
+        /* Info card mobile */
         .info-item {
             flex-direction: column;
             text-align: center;
             gap: 8px;
         }
+        
         .info-divider {
             width: 80%;
             height: 1px;
             margin: 10px auto;
         }
+        
         .info-card-inner {
             padding: 16px;
         }
+        
         .info-icon {
             width: 32px;
             height: 32px;
             font-size: 14px;
         }
+        
+        /* Subjects grid mobile - make it responsive */
         .subjects-grid {
-            gap: 8px 20px;
+            grid-template-columns: 1fr;
+            gap: 8px;
         }
+        
         .subject-number {
-            font-size: 11px;
-            width: 24px;
+            font-size: 12px;
+            width: 26px;
         }
+        
         .subject-name {
+            font-size: 12px;
+        }
+        
+        .subject-icon {
             font-size: 11px;
         }
+        
         .subjects-header h2 {
             font-size: 14px;
         }
+        
         .main-inner-box {
             padding: 16px;
             margin: 12px;
+        }
+        
+        /* Sticky header mobile fix */
+        .sticky-top .flex {
+            gap: 8px;
+        }
+        
+        .sticky-top input {
+            font-size: 12px;
+            padding: 6px 8px;
+        }
+        
+        .sticky-top button,
+        .sticky-top a {
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+        
+        /* Social buttons mobile */
+        .social-buttons a {
+            padding: 10px;
+            font-size: 12px;
+        }
+        
+        /* VIP banner mobile */
+        .vip-banner {
+            padding: 10px;
+        }
+        
+        .vip-banner p {
+            font-size: 11px;
+        }
+        
+        /* Hot updates and timetable boxes mobile */
+        .hotupdates-inner-box,
+        .timetable-inner-box {
+            padding: 10px 12px;
+        }
+        
+        .hotupdates-header span {
+            font-size: 11px;
+        }
+        
+        .timetable-link {
+            font-size: 11px;
+        }
+        
+        /* Need help mobile */
+        .need-help-section {
+            padding: 14px;
+        }
+        
+        .need-help-title {
+            font-size: 12px;
+        }
+        
+        .need-help-email {
+            font-size: 11px;
+        }
+        
+        .need-help-powered {
+            font-size: 10px;
+        }
+        
+        /* Sticky footer mobile */
+        .sticky-bottom .flex {
+            gap: 8px;
+        }
+        
+        .sticky-bottom input {
+            font-size: 12px;
+            padding: 6px 8px;
+        }
+        
+        .sticky-bottom button,
+        .sticky-bottom a {
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+        
+        /* Hero section mobile */
+        .hero-section {
+            padding: 12px;
+        }
+        
+        .hero-section h1 {
+            font-size: 18px;
+        }
+        
+        .hero-section p {
+            font-size: 11px;
+        }
+        
+        .marquee-text p {
+            font-size: 10px;
+        }
+    }
+    
+    /* Extra small devices */
+    @media (max-width: 480px) {
+        .sticky-top .flex {
+            flex-wrap: wrap;
+        }
+        
+        .sticky-top .flex-1 {
+            min-width: 120px;
+        }
+        
+        .sticky-bottom .flex {
+            flex-wrap: wrap;
+        }
+        
+        .sticky-bottom .flex-1 {
+            min-width: 120px;
+        }
+        
+        .subject-item {
+            gap: 6px;
+        }
+        
+        .subject-number {
+            width: 22px;
+            font-size: 11px;
+        }
+        
+        .subject-name {
+            font-size: 11px;
         }
     }
 </style>
 
 <!-- ================= STICKY HEADER ================= -->
 <div class="sticky-top bg-gradient-to-r from-blue-800 via-blue-700 to-blue-800 shadow-lg z-50 border-b border-blue-600">
-    <div class="max-w-[750px] mx-auto px-2 sm:px-3 py-1 sm:py-1.5">
-        <div class="flex flex-wrap items-center justify-between gap-1 sm:gap-2">
-            <a href="/" onclick="resetToHomepage(); return true;" class="bg-blue-600 hover:bg-blue-500 transition p-1 sm:p-1.5 rounded-md flex-shrink-0" style="cursor: pointer;">
-                <i class="fas fa-home text-white text-xs sm:text-sm"></i>
+    <div class="max-w-[750px] mx-auto px-3 py-2">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <a href="/" onclick="resetToHomepage(); return true;" class="bg-blue-600 hover:bg-blue-500 transition p-2 rounded-md flex-shrink-0" style="cursor: pointer;">
+                <i class="fas fa-home text-white text-sm"></i>
             </a>
-            <a href="{{ whatsapp_link }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-2 text-xs sm:text-sm rounded whitespace-nowrap flex-shrink-0">
-                <i class="fab fa-whatsapp mr-0.5 sm:mr-1"></i> Chat
+            <a href="{{ whatsapp_link }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 text-sm rounded whitespace-nowrap flex-shrink-0">
+                <i class="fab fa-whatsapp mr-1"></i> Chat
             </a>
-            <div class="flex-1 min-w-[100px]">
+            <div class="flex-1 min-w-[120px]">
                 <input type="tel" id="pinInputHeader" placeholder="PIN" required maxlength="3" pattern="\d*" inputmode="numeric"
-                       class="w-full bg-gray-800 border border-gray-600 py-1 px-2 text-white placeholder-gray-400 text-xs sm:text-sm focus:outline-none focus:border-blue-400 transition">
+                       class="w-full bg-gray-800 border border-gray-600 py-2 px-3 text-white placeholder-gray-400 text-sm focus:outline-none focus:border-blue-400 transition rounded">
             </div>
-            <button id="viewAnswerHeaderBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 text-xs sm:text-sm shadow whitespace-nowrap flex-shrink-0">
+            <button id="viewAnswerHeaderBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 text-sm shadow whitespace-nowrap flex-shrink-0 rounded">
                 VIEW
             </button>
         </div>
@@ -375,81 +538,81 @@
 </div>
 
 <!-- ================= MAIN CONTENT ================= -->
-<main class="max-w-[750px] mx-auto px-2 sm:px-3 py-2 sm:py-3">
+<main class="max-w-[750px] mx-auto px-3 py-3">
 
     <!-- Hero Section -->
-    <div class="bg-blue-700 p-2.5 sm:p-4 shadow-md mb-3 sm:mb-4 border border-blue-600 rounded-lg">
-        <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight text-center">{{ hero_title }}</h1>
-        <p class="text-xs sm:text-sm md:text-base text-blue-100 italic mt-1 sm:mt-2 text-center">{{ hero_text }}</p>
+    <div class="bg-blue-700 p-4 shadow-md mb-4 border border-blue-600 rounded-lg">
+        <h1 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight text-center">{{ hero_title }}</h1>
+        <p class="text-sm text-blue-100 italic mt-2 text-center">{{ hero_text }}</p>
 
-        <div class="bg-blue-800 py-1 sm:py-1.5 mt-2 sm:mt-3 mb-2 sm:mb-3 overflow-hidden border border-blue-600 rounded">
+        <div class="bg-blue-800 py-2 mt-3 mb-3 overflow-hidden border border-blue-600 rounded">
             <div class="animate-marquee whitespace-nowrap">
-                <p class="text-yellow-300 text-center font-black text-xs sm:text-sm tracking-wide inline-block drop-shadow-md">
+                <p class="text-yellow-300 text-center font-black text-xs tracking-wide inline-block drop-shadow-md">
                     {{ moving_tagline }}
                 </p>
             </div>
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center w-full">
-            <a href="/" onclick="resetToHomepage(); return true;" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 text-center shadow transition text-xs sm:text-sm flex items-center justify-center gap-1.5 rounded-lg w-full sm:w-auto">
-                <i class="fas fa-home text-xs sm:text-sm"></i><span>Home</span>
+        <div class="flex flex-col gap-3 justify-center w-full">
+            <a href="/" onclick="resetToHomepage(); return true;" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 text-center shadow transition text-sm flex items-center justify-center gap-2 rounded-lg w-full">
+                <i class="fas fa-home text-sm"></i><span>Home</span>
             </a>
-            <button id="heroEnterPinBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 text-center shadow transition text-xs sm:text-sm flex items-center justify-center gap-1.5 rounded-lg w-full sm:w-auto">
-                <i class="fas fa-key text-xs sm:text-sm"></i><span>Enter Pin</span>
+            <button id="heroEnterPinBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 text-center shadow transition text-sm flex items-center justify-center gap-2 rounded-lg w-full">
+                <i class="fas fa-key text-sm"></i><span>Enter Pin</span>
             </button>
-            <a href="/admin/login" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 text-center shadow transition text-xs sm:text-sm flex items-center justify-center gap-1.5 rounded-lg w-full sm:w-auto">
-                <i class="fas fa-lock text-xs sm:text-sm"></i><span>Admin Login</span>
+            <a href="/admin/login" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 text-center shadow transition text-sm flex items-center justify-center gap-2 rounded-lg w-full">
+                <i class="fas fa-lock text-sm"></i><span>Admin Login</span>
             </a>
         </div>
     </div>
 
     <!-- Social Channels -->
-    <div class="mb-3 sm:mb-4 space-y-2 sm:space-y-2.5">
-        <a href="{{ whatsapp_link }}" target="_blank" class="block bg-green-600 hover:bg-green-700 transition p-2 sm:p-2.5 flex items-center justify-center gap-2 sm:gap-3 shadow border border-green-500 rounded-lg">
-            <i class="fab fa-whatsapp text-lg sm:text-xl text-white"></i>
-            <span class="text-xs sm:text-sm font-bold text-white">Join Our WhatsApp Channel</span>
+    <div class="mb-4 space-y-3">
+        <a href="{{ whatsapp_link }}" target="_blank" class="block bg-green-600 hover:bg-green-700 transition p-3 flex items-center justify-center gap-3 shadow border border-green-500 rounded-lg">
+            <i class="fab fa-whatsapp text-xl text-white"></i>
+            <span class="text-sm font-bold text-white">Join Our WhatsApp Channel</span>
         </a>
-        <a href="{{ telegram_link }}" target="_blank" class="block bg-blue-600 hover:bg-blue-700 transition p-2 sm:p-2.5 flex items-center justify-center gap-2 sm:gap-3 shadow border border-blue-500 rounded-lg">
-            <i class="fab fa-telegram-plane text-lg sm:text-xl text-white"></i>
-            <span class="text-xs sm:text-sm font-bold text-white">Join Our Telegram Channel</span>
+        <a href="{{ telegram_link }}" target="_blank" class="block bg-blue-600 hover:bg-blue-700 transition p-3 flex items-center justify-center gap-3 shadow border border-blue-500 rounded-lg">
+            <i class="fab fa-telegram-plane text-xl text-white"></i>
+            <span class="text-sm font-bold text-white">Join Our Telegram Channel</span>
         </a>
     </div>
 
     <!-- VIP Banner -->
-    <div class="bg-red-600 p-2 sm:p-3 mb-3 sm:mb-4 text-center shadow border border-red-500 rounded-lg">
-        <p class="text-white font-semibold text-xs sm:text-sm">{{ vip_text }}</p>
-        <p class="text-white mt-0.5 sm:mt-1 text-[10px] sm:text-xs"><i class="fab fa-whatsapp mr-0.5 sm:mr-1"></i> Message <strong>{{ vip_number }}</strong> on WhatsApp</p>
+    <div class="bg-red-600 p-3 mb-4 text-center shadow border border-red-500 rounded-lg">
+        <p class="text-white font-semibold text-sm">{{ vip_text }}</p>
+        <p class="text-white mt-1 text-xs"><i class="fab fa-whatsapp mr-1"></i> Message <strong>{{ vip_number }}</strong> on WhatsApp</p>
     </div>
 
     <!-- ERROR MESSAGE BOX -->
-    <div id="pinErrorBox" class="hidden mb-4 sm:mb-5">
-        <div class="bg-white border-2 border-red-500 p-4 sm:p-6 shadow-lg rounded-lg">
-            <div class="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5 border-b border-red-200 pb-3 sm:pb-4">
-                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-red-500 flex items-center justify-center rounded-full">
-                    <i class="fas fa-times-circle text-white text-base sm:text-xl"></i>
+    <div id="pinErrorBox" class="hidden mb-4">
+        <div class="bg-white border-2 border-red-500 p-4 shadow-lg rounded-lg">
+            <div class="flex items-center gap-3 mb-4 border-b border-red-200 pb-3">
+                <div class="w-10 h-10 bg-red-500 flex items-center justify-center rounded-full">
+                    <i class="fas fa-times-circle text-white text-xl"></i>
                 </div>
-                <h3 class="text-red-600 font-bold text-base sm:text-lg uppercase tracking-wide">Incorrect PIN</h3>
+                <h3 class="text-red-600 font-bold text-base uppercase tracking-wide">Incorrect PIN</h3>
             </div>
-            <p class="text-gray-700 text-sm sm:text-base mb-4 sm:mb-6">The PIN does not exist. Please check and try again.</p>
-            <div class="mb-4 sm:mb-5">
-                <label class="block text-gray-700 text-sm sm:text-base font-semibold mb-2 sm:mb-2.5">Enter PIN</label>
-                <div class="flex flex-col xs:flex-row gap-2 sm:gap-3">
+            <p class="text-gray-700 text-sm mb-4">The PIN does not exist. Please check and try again.</p>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-semibold mb-2">Enter PIN</label>
+                <div class="flex flex-col gap-3">
                     <input type="tel" id="pinInputError" placeholder="Enter PIN" required maxlength="3" pattern="\d*" inputmode="numeric"
-                           class="flex-1 bg-gray-100 border border-gray-300 py-2 sm:py-2.5 px-3 sm:px-4 text-gray-800 placeholder-gray-400 text-center text-base sm:text-lg focus:outline-none focus:border-red-500 transition rounded-lg">
-                    <button id="viewAnswerErrorBtn" class="bg-white hover:bg-gray-100 text-red-600 font-bold py-2 sm:py-2.5 px-4 sm:px-6 text-sm sm:text-base shadow transition whitespace-nowrap rounded-lg border-2 border-red-500">
+                           class="flex-1 bg-gray-100 border border-gray-300 py-3 px-4 text-gray-800 placeholder-gray-400 text-center text-base focus:outline-none focus:border-red-500 transition rounded-lg">
+                    <button id="viewAnswerErrorBtn" class="bg-white hover:bg-gray-100 text-red-600 font-bold py-3 px-4 text-sm shadow transition whitespace-nowrap rounded-lg border-2 border-red-500">
                         VIEW ANSWER
                     </button>
                 </div>
             </div>
-            <div class="flex items-center gap-2 sm:gap-2.5 pt-2 sm:pt-3 border-t border-gray-200 mt-2 sm:mt-3">
-                <i class="fas fa-arrow-left text-red-500 text-sm sm:text-base"></i>
-                <a href="#" onclick="goBackToHomepage(); return false;" class="text-red-600 hover:text-red-700 text-sm sm:text-base underline transition">Back to Homepage</a>
+            <div class="flex items-center gap-2 pt-2 border-t border-gray-200 mt-2">
+                <i class="fas fa-arrow-left text-red-500 text-sm"></i>
+                <a href="#" onclick="goBackToHomepage(); return false;" class="text-red-600 hover:text-red-700 text-sm underline transition">Back to Homepage</a>
             </div>
         </div>
     </div>
 
     <!-- ANSWER DISPLAY SECTION - Enhanced Design -->
-    <div id="answerSection" class="hidden mb-4 sm:mb-5">
+    <div id="answerSection" class="hidden mb-4">
         <div class="answer-outer-container">
             
             <!-- Refresh Button at Top -->
@@ -460,13 +623,12 @@
             </div>
             
             <!-- Subject Name -->
-            <h1 class="text-2xl md:text-3xl font-bold text-center uppercase answer-subject" id="answerSubjectName">-</h1>
+            <h1 class="text-2xl font-bold text-center uppercase answer-subject" id="answerSubjectName">-</h1>
             
             <!-- ENHANCED INFO CARD - Modern Design -->
             <div class="info-card-modern">
                 <div class="info-card-inner">
                     <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8">
-                        <!-- Posted By Section -->
                         <div class="info-item">
                             <div class="info-icon">
                                 <i class="fas fa-user-edit"></i>
@@ -476,11 +638,7 @@
                                 <div class="info-value" id="answerPostedBy">-</div>
                             </div>
                         </div>
-                        
-                        <!-- Divider -->
                         <div class="info-divider"></div>
-                        
-                        <!-- PIN Section -->
                         <div class="info-item">
                             <div class="info-icon">
                                 <i class="fas fa-key"></i>
@@ -494,27 +652,22 @@
                 </div>
             </div>
             
-            <!-- Separator -->
             <div class="separator">
                 <span>═══════════════════════════════════════</span>
             </div>
             
-            <!-- INNER BRIGHT WHITE BOX - Where answers live -->
             <div class="answer-inner-box">
                 <div id="answerContent" class="answer-text"></div>
             </div>
             
-            <!-- Separator -->
             <div class="separator">
                 <span>═══════════════════════════════════════</span>
             </div>
             
-            <!-- More Answers Loading Text -->
             <div class="text-center my-3">
                 <span class="text-red-600 font-bold text-sm"><i class="fas fa-spinner fa-spin mr-2"></i> More Answers Loading...</span>
             </div>
             
-            <!-- Moving Green Status Bar -->
             <div class="mt-3 mb-4 mx-4">
                 <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                     <div class="bg-green-600 h-2 rounded-full" style="width: 30%; animation: loadingMove 1.5s ease-in-out infinite;"></div>
@@ -526,7 +679,7 @@
         </div>
     </div>
 
-    <!-- SUBJECTS SECTION - ONE CONTINUOUS BOX from subjects to Need Help -->
+    <!-- SUBJECTS SECTION - ONE CONTINUOUS BOX -->
     <div id="subjectsSection">
         <div class="main-outer-container">
             <div class="main-inner-box">
@@ -536,21 +689,23 @@
                 </div>
                 <div id="dynamicSubjectsList" class="subjects-grid"></div>
                 
-                <!-- HOT UPDATES header (inside same box) -->
-                <div class="hotupdates-section">
+                <!-- HOT UPDATES Box inside inner bright white -->
+                <div class="hotupdates-inner-box">
                     <div class="hotupdates-header">
                         <i class="fas fa-fire"></i>
                         <span>HOT UPDATES</span>
                     </div>
                 </div>
                 
-                <!-- Timetable Link (inside same box) -->
-                <a href="#" id="timetableLink" class="timetable-link">
-                    <i class="fas fa-chevron-right"></i>
-                    2026 WAEC MAY/JUNE FINAL EXAMINATION TIMETABLE FROM EXAMKING.NET
-                </a>
+                <!-- Timetable Link Box inside inner bright white -->
+                <div class="timetable-inner-box">
+                    <a href="#" id="timetableLink" class="timetable-link">
+                        <i class="fas fa-chevron-right"></i>
+                        2026 WAEC MAY/JUNE FINAL EXAMINATION TIMETABLE FROM ANSWERPOINT.NG
+                    </a>
+                </div>
                 
-                <!-- Need Help Section - Dark Grey with Orange Text (inside same bright white box) -->
+                <!-- Need Help Section -->
                 <div class="need-help-section">
                     <div class="need-help-title">Need Help? We're Here for You!</div>
                     <div class="need-help-email">
@@ -566,17 +721,17 @@
 </main>
 
 <!-- STICKY FOOTER -->
-<div class="sticky-bottom bg-gradient-to-r from-blue-800 via-blue-700 to-blue-800 shadow-inner z-50 mt-2 sm:mt-3 border-t border-blue-600">
-    <div class="max-w-[750px] mx-auto px-2 sm:px-3 py-1 sm:py-1.5">
-        <div class="flex flex-wrap items-center justify-between gap-1 sm:gap-2">
-            <a href="{{ whatsapp_link }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-1 px-2 text-xs sm:text-sm rounded whitespace-nowrap flex-shrink-0">
-                <i class="fab fa-whatsapp mr-0.5 sm:mr-1"></i> Chat
+<div class="sticky-bottom bg-gradient-to-r from-blue-800 via-blue-700 to-blue-800 shadow-inner z-50 mt-3 border-t border-blue-600">
+    <div class="max-w-[750px] mx-auto px-3 py-2">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <a href="{{ whatsapp_link }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-3 text-sm rounded whitespace-nowrap flex-shrink-0">
+                <i class="fab fa-whatsapp mr-1"></i> Chat
             </a>
-            <div class="flex-1 min-w-[100px]">
+            <div class="flex-1 min-w-[120px]">
                 <input type="tel" id="pinInputFooter" placeholder="PIN" required maxlength="3" pattern="\d*" inputmode="numeric"
-                       class="w-full bg-gray-800 border border-gray-600 py-1 px-2 text-white placeholder-gray-400 text-xs sm:text-sm focus:outline-none focus:border-blue-400 transition">
+                       class="w-full bg-gray-800 border border-gray-600 py-2 px-3 text-white placeholder-gray-400 text-sm focus:outline-none focus:border-blue-400 transition rounded">
             </div>
-            <button id="viewAnswerFooterBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 text-xs sm:text-sm shadow whitespace-nowrap flex-shrink-0">
+            <button id="viewAnswerFooterBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 text-sm shadow whitespace-nowrap flex-shrink-0 rounded">
                 VIEW
             </button>
         </div>
