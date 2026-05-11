@@ -2,7 +2,6 @@
 
 {% block content %}
 <style>
-    /* No loading overlay - page stays visible */
     body {
         background: #f5f5f5;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
@@ -65,25 +64,12 @@
         margin-left: 5px;
         white-space: nowrap;
     }
-    
-    /* Subjects loading indicator - subtle */
-    .subjects-loading {
-        text-align: center;
-        padding: 40px;
-        color: #9ca3af;
-    }
-    .subjects-loading i {
-        font-size: 24px;
-        margin-bottom: 10px;
-        display: inline-block;
-    }
 </style>
 
 <!-- ================= STICKY HEADER ================= -->
 <div class="sticky-top bg-gradient-to-r from-blue-800 via-blue-700 to-blue-800 shadow-lg z-50 border-b border-blue-600">
     <div class="max-w-[750px] mx-auto px-2 sm:px-3 py-1 sm:py-1.5">
         <div class="flex flex-wrap items-center justify-between gap-1 sm:gap-2">
-            <!-- Home Icon -->
             <a href="/" onclick="resetToHomepage(); return true;" class="bg-blue-600 hover:bg-blue-500 transition p-1 sm:p-1.5 rounded-md flex-shrink-0" style="cursor: pointer;">
                 <i class="fas fa-home text-white text-xs sm:text-sm"></i>
             </a>
@@ -175,7 +161,7 @@
         </div>
     </div>
 
-    <!-- ANSWER DISPLAY SECTION - Colors come from PIN data -->
+    <!-- ANSWER DISPLAY SECTION - NO "Answer Loading..." text at top -->
     <div id="answerSection" class="hidden mb-4 sm:mb-5">
         <div class="bg-white border-2 border-blue-500 rounded-lg shadow-lg overflow-hidden">
             
@@ -187,7 +173,7 @@
             </div>
             
             <div class="p-4 md:p-6">
-                <!-- Subject Name - Shows from PIN data with color from admin -->
+                <!-- Subject Name -->
                 <h1 class="text-2xl md:text-3xl font-bold text-center uppercase mb-4" id="answerSubjectName" style="color: #000000;">-</h1>
                 
                 <!-- Small Box: Posted by & PIN -->
@@ -209,17 +195,7 @@
                     <span class="text-gray-400 text-sm">====================</span>
                 </div>
                 
-                <!-- Answer Loading Text -->
-                <div class="text-center my-3">
-                    <span class="text-red-600 font-bold text-sm">Answer Loading...</span>
-                </div>
-                
-                <!-- Separator -->
-                <div class="text-center my-4">
-                    <span class="text-gray-400 text-sm">====================</span>
-                </div>
-                
-                <!-- Main Answers Show Here - Text color comes from PIN answer_text_color -->
+                <!-- Main Answers Show Here - Color from admin dashboard -->
                 <div id="answerContent" class="answer-text py-4"></div>
                 
                 <!-- Separator -->
@@ -248,12 +224,7 @@
         <div class="bg-white border border-gray-300 shadow rounded-lg">
             <div class="p-2 sm:p-3">
                 <h2 class="text-sm sm:text-base font-bold mb-2 sm:mb-3 text-gray-800 text-center">📚 List of All Available Subjects</h2>
-                <div id="dynamicSubjectsList" class="grid grid-cols-1 xs:grid-cols-2 gap-1.5 sm:gap-2">
-                    <div class="subjects-loading col-span-2">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Loading subjects...</p>
-                    </div>
-                </div>
+                <div id="dynamicSubjectsList" class="grid grid-cols-1 xs:grid-cols-2 gap-1.5 sm:gap-2"></div>
             </div>
             <div class="border-t border-gray-200 p-2 sm:p-3">
                 <div class="bg-gray-50 border border-gray-200 p-2 sm:p-3 rounded">
@@ -304,7 +275,6 @@ let currentAnswerPin = null;
 let isLoading = false;
 const answerCache = new Map();
 
-// Reset to homepage function
 function resetToHomepage() {
     currentAnswerPin = null;
     isLoading = false;
@@ -403,7 +373,7 @@ function displayAnswer(data) {
     const pinCode = data.pin_code || '000';
     const answerHtml = data.answer_text || '<p class="text-gray-500 text-center py-4">No answer content available</p>';
     
-    // Apply colors from PIN data
+    // Use colors from admin dashboard (set in PIN creation)
     const headerColor = data.header_color || '#000000';
     const textColor = data.text_color || '#1f2937';
     
@@ -412,7 +382,7 @@ function displayAnswer(data) {
     answerPostedBy.innerHTML = postedBy;
     answerPinValue.innerHTML = pinCode;
     
-    // Apply text color to answer content and remove any conflicting styles
+    // Apply text color to answer content
     let styledAnswerHtml = answerHtml;
     if (answerHtml && !answerHtml.includes('style="color:')) {
         styledAnswerHtml = `<div style="color: ${textColor};">${answerHtml}</div>`;
