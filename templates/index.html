@@ -157,18 +157,17 @@
         letter-spacing: 2px;
     }
     
-    /* SUBJECTS SECTION - Blue Outline Container */
-    .subjects-outer-container {
+    /* MAIN CONTAINER - One continuous off-white box */
+    .main-outer-container {
         background: #f5f5f0;
         border: 2px solid #3b82f6;
         border-radius: 20px;
         overflow: hidden;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-        margin-bottom: 0;
     }
     
-    /* Inner Subjects Box - Very Bright White */
-    .subjects-inner-box {
+    /* Inner bright white box that runs continuously */
+    .main-inner-box {
         background: #ffffff;
         border-radius: 16px;
         margin: 20px;
@@ -194,6 +193,7 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 12px 40px;
+        margin-bottom: 20px;
     }
     
     .subject-item {
@@ -223,28 +223,19 @@
         flex: 1;
     }
     
-    /* HOT UPDATES - Separate Box (Closed) - NO GAP */
-    .hotupdates-outer-container {
-        background: #f5f5f0;
-        border: 2px solid #f59e0b;
-        border-radius: 20px;
-        overflow: hidden;
-        margin-top: 0;
-        margin-bottom: 0;
-    }
-    
-    .hotupdates-inner-box {
-        background: #ffffff;
-        border-radius: 16px;
-        margin: 20px;
-        padding: 16px 20px;
+    /* HOT UPDATES header inside the same continuous box */
+    .hotupdates-section {
+        margin-top: 10px;
+        margin-bottom: 15px;
+        padding-top: 10px;
+        border-top: 1px solid #e5e7eb;
     }
     
     .hotupdates-header {
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 0;
+        margin-bottom: 12px;
     }
     
     .hotupdates-header i {
@@ -260,29 +251,15 @@
         letter-spacing: 0.5px;
     }
     
-    /* Timetable Link - Separate Box (Closed) - NO GAP */
-    .timetable-outer-container {
-        background: #f5f5f0;
-        border: 2px solid #3b82f6;
-        border-radius: 20px;
-        overflow: hidden;
-        margin-top: 0;
-        margin-bottom: 20px;
-    }
-    
-    .timetable-inner-box {
-        background: #ffffff;
-        border-radius: 16px;
-        margin: 20px;
-        padding: 16px 20px;
-    }
-    
+    /* Timetable link */
     .timetable-link {
         display: block;
         color: #2563eb;
         text-decoration: none;
         font-size: 13px;
         font-weight: 500;
+        margin-bottom: 20px;
+        padding: 5px 0;
     }
     
     .timetable-link i {
@@ -296,19 +273,13 @@
         text-decoration: underline;
     }
     
-    /* Need Help Section - Dark Grey with Orange Text */
-    .need-help-container {
+    /* Need Help Section - Dark Grey with Orange Text (inside same box, but different colors) */
+    .need-help-section {
         background: #1f2937;
-        border: 2px solid #f59e0b;
-        border-radius: 20px;
-        overflow: hidden;
-        margin-top: 0;
-    }
-    
-    .need-help-inner {
-        background: #1f2937;
+        border-radius: 12px;
         padding: 20px;
         text-align: center;
+        margin-top: 10px;
     }
     
     .need-help-title {
@@ -375,12 +346,8 @@
         .subjects-header h2 {
             font-size: 14px;
         }
-        .subjects-inner-box {
+        .main-inner-box {
             padding: 16px;
-            margin: 12px;
-        }
-        .hotupdates-inner-box, .timetable-inner-box {
-            padding: 12px 16px;
             margin: 12px;
         }
     }
@@ -559,47 +526,39 @@
         </div>
     </div>
 
-    <!-- SUBJECTS SECTION - All boxes connected with NO gaps -->
+    <!-- SUBJECTS SECTION - ONE CONTINUOUS BOX from subjects to Need Help -->
     <div id="subjectsSection">
-        <!-- Box 1: Subjects List (Blue outline) -->
-        <div class="subjects-outer-container">
-            <div class="subjects-inner-box">
+        <div class="main-outer-container">
+            <div class="main-inner-box">
+                <!-- Subjects List -->
                 <div class="subjects-header">
                     <h2>📚 List of All Available WAEC and NECO Subjects</h2>
                 </div>
                 <div id="dynamicSubjectsList" class="subjects-grid"></div>
-            </div>
-        </div>
-        
-        <!-- Box 2: HOT UPDATES (Orange outline - CLOSED box) -->
-        <div class="hotupdates-outer-container">
-            <div class="hotupdates-inner-box">
-                <div class="hotupdates-header">
-                    <i class="fas fa-fire"></i>
-                    <span>HOT UPDATES</span>
+                
+                <!-- HOT UPDATES header (inside same box) -->
+                <div class="hotupdates-section">
+                    <div class="hotupdates-header">
+                        <i class="fas fa-fire"></i>
+                        <span>HOT UPDATES</span>
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Box 3: Timetable Link (Blue outline - CLOSED box) -->
-        <div class="timetable-outer-container">
-            <div class="timetable-inner-box">
+                
+                <!-- Timetable Link (inside same box) -->
                 <a href="#" id="timetableLink" class="timetable-link">
                     <i class="fas fa-chevron-right"></i>
                     2026 WAEC MAY/JUNE FINAL EXAMINATION TIMETABLE FROM EXAMKING.NET
                 </a>
-            </div>
-        </div>
-        
-        <!-- Box 4: Need Help Section - Dark Grey with Orange Text -->
-        <div class="need-help-container">
-            <div class="need-help-inner">
-                <div class="need-help-title">Need Help? We're Here for You!</div>
-                <div class="need-help-email">
-                    📧 <a href="mailto:{{ support_email }}">{{ support_email }}</a>
-                </div>
-                <div class="need-help-powered">
-                    Powered By AnswerPoint
+                
+                <!-- Need Help Section - Dark Grey with Orange Text (inside same bright white box) -->
+                <div class="need-help-section">
+                    <div class="need-help-title">Need Help? We're Here for You!</div>
+                    <div class="need-help-email">
+                        📧 <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+                    </div>
+                    <div class="need-help-powered">
+                        Powered By AnswerPoint
+                    </div>
                 </div>
             </div>
         </div>
