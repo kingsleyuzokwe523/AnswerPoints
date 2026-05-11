@@ -7,7 +7,36 @@ import os
 main_bp = Blueprint('main', __name__)
 
 # ==================== IMAGE SERVING ROUTES ====================
-
+@main_bp.route('/debug_templates')
+def debug_templates():
+    import os
+    from flask import current_app
+    
+    # Check where Flask thinks templates should be
+    template_folder = current_app.template_folder
+    template_path = os.path.join(current_app.root_path, template_folder)
+    
+    # List all possible template locations
+    possible_locations = [
+        template_path,
+        os.path.join(current_app.root_path, 'templates'),
+        os.path.join(os.path.dirname(current_app.root_path), 'templates'),
+        '/opt/render/project/src/templates',
+        '/opt/render/project/src/app/templates',
+    ]
+    
+    results = {}
+    for loc in possible_locations:
+        results[loc] = {
+            'exists': os.path.exists(loc),
+            'files': os.listdir(loc) if os.path.exists(loc) else []
+        }
+    
+    return jsonify({
+        'current_app_root_path': current_app.root_path,
+        'template_folder_setting': template_folder,
+        'locations_checked': results
+    })
 @main_bp.route('/static/uploads/<path:filename>')
 def serve_upload(filename):
     """Serve uploaded files from static/uploads directory"""
