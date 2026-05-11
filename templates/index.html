@@ -164,6 +164,7 @@
         border-radius: 20px;
         overflow: hidden;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
     }
     
     /* Inner Subjects Box - Very Bright White */
@@ -222,13 +223,13 @@
         flex: 1;
     }
     
-    /* HOT UPDATES - Separate Box with Off-white Outer and Bright White Inner */
+    /* HOT UPDATES - Separate Box */
     .hotupdates-outer-container {
         background: #f5f5f0;
         border: 1px solid #f59e0b;
         border-radius: 16px;
         overflow: hidden;
-        margin-top: 20px;
+        margin-bottom: 20px;
     }
     
     .hotupdates-inner-box {
@@ -260,33 +261,69 @@
         letter-spacing: 0.5px;
     }
     
-    .hotupdates-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .hotupdates-list li {
-        margin-bottom: 10px;
+    .timetable-link {
+        display: block;
+        color: #2563eb;
+        text-decoration: none;
         font-size: 13px;
-        color: #374151;
+        padding: 8px 0;
     }
     
-    .hotupdates-list li i {
+    .timetable-link i {
         color: #3b82f6;
         margin-right: 6px;
         font-size: 10px;
     }
     
-    .hotupdates-list a {
-        color: #2563eb;
-        text-decoration: none;
-        font-size: 13px;
-    }
-    
-    .hotupdates-list a:hover {
+    .timetable-link:hover {
         color: #1d4ed8;
         text-decoration: underline;
+    }
+    
+    /* Need Help Section - Dark Grey with Orange Text */
+    .need-help-container {
+        background: #1f2937;
+        border: 2px solid #f59e0b;
+        border-radius: 16px;
+        overflow: hidden;
+        margin-top: 0;
+    }
+    
+    .need-help-inner {
+        background: #1f2937;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .need-help-title {
+        color: #f59e0b;
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 10px;
+        letter-spacing: 0.5px;
+    }
+    
+    .need-help-email {
+        color: #f59e0b;
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+    
+    .need-help-email a {
+        color: #f59e0b;
+        text-decoration: none;
+    }
+    
+    .need-help-email a:hover {
+        text-decoration: underline;
+    }
+    
+    .need-help-powered {
+        color: #f59e0b;
+        font-size: 11px;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #374151;
     }
     
     /* Responsive */
@@ -505,7 +542,7 @@
         </div>
     </div>
 
-    <!-- SUBJECTS SECTION - With Blue Outline like Answer Section -->
+    <!-- SUBJECTS SECTION - With Blue Outline covering everything until Need Help -->
     <div id="subjectsSection">
         <div class="subjects-outer-container">
             <div class="subjects-inner-box">
@@ -516,34 +553,31 @@
             </div>
         </div>
         
-        <!-- HOT UPDATES - Separate Box with Off-white Outer and Bright White Inner -->
+        <!-- HOT UPDATES - Separate Box with only Timetable -->
         <div class="hotupdates-outer-container">
             <div class="hotupdates-inner-box">
                 <div class="hotupdates-header">
                     <i class="fas fa-fire"></i>
                     <span>HOT UPDATES</span>
                 </div>
-                <ul class="hotupdates-list">
-                    <li>
-                        <i class="fas fa-chevron-right"></i>
-                        <a href="#" id="timetableLink">2026 WAEC MAY/JUNE FINAL EXAMINATION TIMETABLE FROM EXAMKING.NET</a>
-                    </li>
-                    <li>
-                        <i class="fas fa-chevron-right"></i>
-                        <span>Testing Post</span>
-                    </li>
-                </ul>
+                <a href="#" id="timetableLink" class="timetable-link">
+                    <i class="fas fa-chevron-right"></i>
+                    2026 WAEC MAY/JUNE FINAL EXAMINATION TIMETABLE FROM EXAMKING.NET
+                </a>
             </div>
         </div>
-    </div>
-
-    <!-- Need Help Section -->
-    <div class="bg-gray-800 p-2 sm:p-3 mt-3 sm:mt-4 text-center border border-gray-700 rounded-lg">
-        <p class="font-semibold text-gray-300 text-xs sm:text-sm">{{ need_help_text }}</p>
-        <div class="mt-1 sm:mt-1.5 pt-1 sm:pt-1.5 border-t border-gray-700">
-            <p class="font-semibold text-gray-300 text-xs sm:text-sm">Need Help? We're Here for You!</p>
-            <p class="text-gray-400 text-[10px] sm:text-xs mt-0.5">📧 <a href="mailto:{{ support_email }}" class="text-blue-400 hover:underline">{{ support_email }}</a></p>
-            <p class="text-gray-500 text-[9px] sm:text-[10px] mt-0.5">{{ footer_text }}</p>
+        
+        <!-- Need Help Section - Dark Grey with Orange Text -->
+        <div class="need-help-container">
+            <div class="need-help-inner">
+                <div class="need-help-title">Need Help? We're Here for You!</div>
+                <div class="need-help-email">
+                    📧 <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+                </div>
+                <div class="need-help-powered">
+                    Powered By AnswerPoint
+                </div>
+            </div>
         </div>
     </div>
 </main>
