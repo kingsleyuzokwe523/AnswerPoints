@@ -20,6 +20,15 @@
         border-radius: 8px;
         margin: 10px 0;
     }
+    /* Force answer text to be visible - dark color */
+    #answerContent,
+    #answerContent * {
+        color: #1f2937 !important;
+    }
+    /* But allow images to display normally */
+    #answerContent img {
+        color: initial !important;
+    }
     @keyframes marquee {
         0% { transform: translateX(100%); }
         100% { transform: translateX(-100%); }
@@ -161,7 +170,7 @@
         </div>
     </div>
 
-    <!-- ANSWER DISPLAY SECTION - NO "Answer Loading..." text at top -->
+    <!-- ANSWER DISPLAY SECTION -->
     <div id="answerSection" class="hidden mb-4 sm:mb-5">
         <div class="bg-white border-2 border-blue-500 rounded-lg shadow-lg overflow-hidden">
             
@@ -174,7 +183,7 @@
             
             <div class="p-4 md:p-6">
                 <!-- Subject Name -->
-                <h1 class="text-2xl md:text-3xl font-bold text-center uppercase mb-4" id="answerSubjectName" style="color: #000000;">-</h1>
+                <h1 class="text-2xl md:text-3xl font-bold text-center uppercase mb-4" id="answerSubjectName">-</h1>
                 
                 <!-- Small Box: Posted by & PIN -->
                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
@@ -195,8 +204,8 @@
                     <span class="text-gray-400 text-sm">====================</span>
                 </div>
                 
-                <!-- Main Answers Show Here - Color from admin dashboard -->
-                <div id="answerContent" class="answer-text py-4"></div>
+                <!-- Main Answers Show Here - Text will be forced to dark color -->
+                <div id="answerContent" class="answer-text py-4" style="color: #1f2937 !important;"></div>
                 
                 <!-- Separator -->
                 <div class="text-center my-4">
@@ -371,23 +380,37 @@ function displayAnswer(data) {
     const subjectName = data.subject_name || data.subject || 'Unknown';
     const postedBy = data.posted_by || 'AnswerPoint Team';
     const pinCode = data.pin_code || '000';
-    const answerHtml = data.answer_text || '<p class="text-gray-500 text-center py-4">No answer content available</p>';
+    let answerHtml = data.answer_text || '<p class="text-gray-500 text-center py-4">No answer content available</p>';
     
-    // Use colors from admin dashboard (set in PIN creation)
-    const headerColor = data.header_color || '#000000';
-    const textColor = data.text_color || '#1f2937';
+    // FORCE text color to be dark/black (remove any white color from admin)
+    // This ensures ALL text is visible on white background
+    answerHtml = answerHtml.replace(/color:\s*#[fF]{6}/g, 'color: #1f2937');
+    answerHtml = answerHtml.replace(/color:\s*white/g, 'color: #1f2937');
+    answerHtml = answerHtml.replace(/color:\s*#ffffff/g, 'color: #1f2937');
     
-    answerSubjectName.style.color = headerColor;
+    // Also remove any inline styles that might hide text
+    answerHtml = answerHtml.replace(/style="([^"]*)"/g, function(match, styles) {
+        let newStyles = styles;
+        if (styles.includes('color:')) {
+            newStyles = newStyles.replace(/color:\s*#[fF]{6}/g, 'color: #1f2937');
+            newStyles = newStyles.replace(/color:\s*white/g, 'color: #1f2937');
+        }
+        // If no color, add it
+        if (!styles.includes('color:')) {
+            newStyles = `color: #1f2937; ${styles}`;
+        }
+        return `style="${newStyles}"`;
+    });
+    
+    // If no style at all, wrap with color
+    if (!answerHtml.includes('style=') && !answerHtml.includes('color:')) {
+        answerHtml = `<div style="color: #1f2937;">${answerHtml}</div>`;
+    }
+    
     answerSubjectName.innerHTML = subjectName.toUpperCase();
     answerPostedBy.innerHTML = postedBy;
     answerPinValue.innerHTML = pinCode;
-    
-    // Apply text color to answer content
-    let styledAnswerHtml = answerHtml;
-    if (answerHtml && !answerHtml.includes('style="color:')) {
-        styledAnswerHtml = `<div style="color: ${textColor};">${answerHtml}</div>`;
-    }
-    answerContent.innerHTML = styledAnswerHtml;
+    answerContent.innerHTML = answerHtml;
     
     answerSection.classList.remove('hidden');
     answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
