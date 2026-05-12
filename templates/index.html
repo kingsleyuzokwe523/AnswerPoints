@@ -85,7 +85,7 @@
     .practical-badge {
         background: #dbeafe;
         color: #1e40af;
-        font-size: 10px;
+        font-size: 12px;
         font-weight: bold;
         padding: 2px 6px;
         border-radius: 10px;
@@ -114,7 +114,7 @@
         margin-top: 15px;
         font-weight: 800;
         letter-spacing: -0.5px;
-        font-size: calc(1.5rem - 4px);
+        font-size: calc(1.5rem - 2px);
     }
     
     .info-card-modern {
@@ -205,7 +205,7 @@
     }
     
     .subjects-header h2 {
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 800;
         color: #1f2937;
         margin: 0;
@@ -217,7 +217,6 @@
         gap: 10px 30px;
         margin-bottom: 20px;
         width: 100%;
-        overflow: visible;
     }
     
     .subjects-column {
@@ -232,13 +231,11 @@
         gap: 10px;
         padding: 5px 0;
         width: 100%;
-        overflow: visible;
-        word-wrap: break-word;
     }
     
     .subject-number {
         color: #9ca3af;
-        font-size: 14px;
+        font-size: 16px;
         font-weight: bold;
         min-width: 28px;
         flex-shrink: 0;
@@ -246,7 +243,7 @@
     
     .subject-icon {
         color: #2563eb;
-        font-size: 13px;
+        font-size: 15px;
         width: 16px;
         flex-shrink: 0;
         margin-top: 2px;
@@ -254,10 +251,9 @@
     
     .subject-name {
         color: #374151;
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 600;
         flex: 1;
-        word-break: break-word;
         line-height: 1.4;
     }
     
@@ -277,13 +273,13 @@
     
     .hotupdates-header i {
         color: #ef4444;
-        font-size: 16px;
+        font-size: 18px;
     }
     
     .hotupdates-header span {
         color: #dc2626;
         font-weight: 800;
-        font-size: 13px;
+        font-size: 15px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -300,15 +296,14 @@
         display: block;
         color: #2563eb;
         text-decoration: none;
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 600;
-        word-break: break-word;
     }
     
     .timetable-link i {
         color: #3b82f6;
         margin-right: 8px;
-        font-size: 11px;
+        font-size: 13px;
     }
     
     .timetable-link:hover {
@@ -326,14 +321,14 @@
     .need-help-title {
         color: #f59e0b;
         font-weight: 800;
-        font-size: 14px;
+        font-size: 16px;
         margin-bottom: 10px;
         letter-spacing: 0.5px;
     }
     
     .need-help-email {
         color: #f59e0b;
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 600;
         margin-bottom: 8px;
     }
@@ -350,7 +345,7 @@
     
     .need-help-powered {
         color: #f59e0b;
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 600;
         margin-top: 8px;
         padding-top: 8px;
@@ -368,7 +363,7 @@
     .hero-buttons a, 
     .hero-buttons button {
         padding: 8px 16px;
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 700;
         white-space: nowrap;
         text-align: center;
@@ -395,11 +390,11 @@
         transition: all 0.3s;
         text-decoration: none;
         font-weight: 800;
-        font-size: 14px;
+        font-size: 16px;
     }
     
     .social-btn i {
-        font-size: 20px;
+        font-size: 22px;
     }
     
     .whatsapp-btn {
@@ -422,7 +417,6 @@
         background: #0077b3;
     }
     
-    /* Facebook box - same style as WhatsApp/Telegram */
     .facebook-btn {
         background: #1877f2;
         color: white;
@@ -444,7 +438,7 @@
     
     .vip-banner p {
         color: white;
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 800;
         margin: 0;
     }
@@ -452,12 +446,38 @@
     .vip-banner small {
         display: block;
         margin-top: 4px;
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 600;
         color: #fecaca;
     }
     
+    /* Hero text styles */
+    .hero-title {
+        font-size: 22px;
+        font-weight: 800;
+    }
+    
+    .hero-subtitle {
+        font-size: 15px;
+    }
+    
+    .marquee-text {
+        font-size: 14px;
+    }
+    
     @media (max-width: 640px) {
+        .hero-title {
+            font-size: 18px;
+        }
+        
+        .hero-subtitle {
+            font-size: 13px;
+        }
+        
+        .marquee-text {
+            font-size: 11px;
+        }
+        
         .answer-subject {
             font-size: calc(1.25rem - 2px);
             font-weight: 800;
@@ -470,7 +490,7 @@
         .hero-buttons a, 
         .hero-buttons button {
             padding: 8px 12px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 700;
         }
         
@@ -480,29 +500,29 @@
         }
         
         .subject-number {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
             min-width: 24px;
         }
         
         .subject-name {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
         }
         
         .subject-icon {
-            font-size: 11px;
+            font-size: 13px;
             width: 14px;
         }
         
         .practical-badge {
-            font-size: 9px;
+            font-size: 11px;
             font-weight: bold;
             padding: 2px 5px;
         }
         
         .subjects-header h2 {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 800;
         }
         
@@ -549,7 +569,7 @@
         }
         
         .sticky-top input {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
             padding: 7px 8px;
         }
@@ -557,7 +577,7 @@
         .sticky-top button,
         .sticky-top a {
             padding: 7px 10px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 700;
         }
         
@@ -567,12 +587,12 @@
         }
         
         .hotupdates-header span {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 800;
         }
         
         .timetable-link {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
         }
         
@@ -581,12 +601,12 @@
         }
         
         .need-help-title {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 800;
         }
         
         .need-help-email {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
         }
         
@@ -595,7 +615,7 @@
         }
         
         .sticky-bottom input {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
             padding: 7px 8px;
         }
@@ -603,27 +623,27 @@
         .sticky-bottom button,
         .sticky-bottom a {
             padding: 7px 10px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 700;
         }
         
         .social-btn {
             padding: 10px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 800;
         }
         
         .social-btn i {
-            font-size: 18px;
+            font-size: 20px;
         }
         
         .vip-banner p {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 800;
         }
         
         .vip-banner small {
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 600;
         }
     }
@@ -635,27 +655,27 @@
         }
         
         .subject-number {
-            font-size: 11px;
+            font-size: 13px;
             min-width: 22px;
         }
         
         .subject-name {
-            font-size: 11px;
+            font-size: 13px;
         }
         
         .hero-buttons a, 
         .hero-buttons button {
-            font-size: 11px;
+            font-size: 12px;
             padding: 6px 8px;
         }
         
         .social-btn {
-            font-size: 12px;
+            font-size: 13px;
             padding: 8px;
         }
         
         .social-btn i {
-            font-size: 16px;
+            font-size: 18px;
         }
     }
 </style>
@@ -686,12 +706,12 @@
 
     <!-- Hero Section -->
     <div class="bg-blue-700 p-4 shadow-md mb-4 border border-blue-600 rounded-lg">
-        <h1 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight text-center">{{ hero_title }}</h1>
-        <p class="text-sm text-blue-100 italic mt-2 text-center">{{ hero_text }}</p>
+        <h1 class="hero-title font-extrabold text-white tracking-tight text-center">{{ hero_title }}</h1>
+        <p class="hero-subtitle text-blue-100 italic mt-2 text-center">{{ hero_text }}</p>
 
         <div class="bg-blue-800 py-2 mt-3 mb-3 overflow-hidden border border-blue-600 rounded">
             <div class="animate-marquee whitespace-nowrap">
-                <p class="text-yellow-300 text-center font-black text-xs tracking-wide inline-block drop-shadow-md">
+                <p class="marquee-text text-yellow-300 text-center font-black tracking-wide inline-block drop-shadow-md">
                     {{ moving_tagline }}
                 </p>
             </div>
@@ -1110,7 +1130,6 @@ function displayAnswer(data) {
     let answerHtml = data.answer_text || '<p class="text-gray-500 text-center py-4">No answer content available</p>';
     
     const headerColor = data.header_color || '#000000';
-    // Force BLACK text color on homepage (ignore admin text color for content)
     
     answerSubjectName.style.color = headerColor;
     answerSubjectName.innerHTML = subjectName.toUpperCase();
