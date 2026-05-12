@@ -7,28 +7,14 @@
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     }
     
-    /* Answer text - ONLY force BLACK color, NO spacing changes */
+    /* Answer text - NO forced color, uses admin settings */
     .answer-text {
         line-height: inherit;
         word-wrap: break-word;
-        color: #000000 !important;
     }
     
     .answer-text p {
         margin-bottom: inherit;
-        color: #000000 !important;
-    }
-    
-    .answer-text div {
-        color: #000000 !important;
-    }
-    
-    .answer-text span {
-        color: #000000 !important;
-    }
-    
-    .answer-text h1, .answer-text h2, .answer-text h3, .answer-text h4 {
-        color: #000000 !important;
     }
     
     .answer-text img {
@@ -212,6 +198,7 @@
         margin: 0;
     }
     
+    /* Subjects Grid - NO ICONS, bigger text */
     .subjects-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -229,7 +216,7 @@
     .subject-item {
         display: flex;
         align-items: flex-start;
-        gap: 10px;
+        gap: 8px;
         padding: 5px 0;
         width: 100%;
     }
@@ -242,14 +229,7 @@
         flex-shrink: 0;
     }
     
-    .subject-icon {
-        color: #2563eb;
-        font-size: 15px;
-        width: 16px;
-        flex-shrink: 0;
-        margin-top: 2px;
-    }
-    
+    /* Subject name - NO ICON, bigger font */
     .subject-name {
         color: #374151;
         font-size: 16px;
@@ -453,7 +433,7 @@
         font-size: 14px;
     }
     
-    /* ========== MOBILE VIEW FIXES - SUBJECTS FIT TO SCREEN ========== */
+    /* ========== MOBILE VIEW ========== */
     @media (max-width: 640px) {
         .answer-subject {
             font-size: calc(1.25rem - 2px);
@@ -495,27 +475,23 @@
         }
         
         .subject-number {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: bold;
-            min-width: 20px;
+            min-width: 22px;
         }
         
+        /* Subject name - bigger on mobile, no icon */
         .subject-name {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 600;
             flex: 1;
             word-break: break-word;
             line-height: 1.3;
         }
         
-        .subject-icon {
-            font-size: 9px;
-            width: 12px;
-        }
-        
         .practical-badge {
-            font-size: 7px;
-            padding: 1px 3px;
+            font-size: 8px;
+            padding: 1px 4px;
             white-space: nowrap;
         }
         
@@ -632,13 +608,14 @@
             font-size: 10px;
         }
         
+        /* Social buttons - INCREASED FONT on mobile */
         .social-btn {
-            padding: 8px 10px;
-            font-size: 14px;
+            padding: 10px 12px;
+            font-size: 18px;
         }
         
         .social-btn i {
-            font-size: 22px;
+            font-size: 26px;
         }
         
         .vip-banner p {
@@ -687,12 +664,12 @@
         }
         
         .subject-number {
-            font-size: 9px;
-            min-width: 18px;
+            font-size: 10px;
+            min-width: 20px;
         }
         
         .subject-name {
-            font-size: 9px;
+            font-size: 10px;
         }
         
         .hero-buttons a, 
@@ -701,18 +678,19 @@
             padding: 5px 4px;
         }
         
+        /* Social buttons - even bigger on small mobile */
         .social-btn {
-            font-size: 12px;
-            padding: 6px 8px;
+            font-size: 16px;
+            padding: 8px 10px;
         }
         
         .social-btn i {
-            font-size: 20px;
+            font-size: 24px;
         }
         
         .practical-badge {
-            font-size: 6px;
-            padding: 1px 2px;
+            font-size: 7px;
+            padding: 1px 3px;
         }
     }
 </style>
@@ -880,7 +858,7 @@
         </div>
     </div>
 
-    <!-- SUBJECTS SECTION - Starts FULLY HIDDEN to prevent any cutting -->
+    <!-- SUBJECTS SECTION - Starts HIDDEN -->
     <div id="subjectsSection" style="display: none; visibility: hidden;">
         <div class="main-outer-container">
             <div class="main-inner-box">
@@ -955,9 +933,11 @@ function preloadImages(html) {
     });
 }
 
+// HARD REFRESH - clears cache and reloads from server
 function hardRefresh() {
     answerCache.clear();
     sessionStorage.clear();
+    // Force reload from server, bypass cache
     window.location.reload(true);
 }
 
@@ -1079,7 +1059,6 @@ function loadSubjectsFromDB() {
     const container = document.getElementById('dynamicSubjectsList');
     const subjectsSection = document.getElementById('subjectsSection');
     
-    // CRITICAL: Keep COMPLETELY HIDDEN until data is fully loaded - NO CUTTING
     subjectsSection.style.display = 'none';
     subjectsSection.style.visibility = 'hidden';
     
@@ -1093,7 +1072,6 @@ function loadSubjectsFromDB() {
                     leftHtml += `
                         <div class="subject-item">
                             <span class="subject-number">${index + 1}.</span>
-                            <i class="fas ${subject.icon || 'fa-book'} subject-icon"></i>
                             <span class="subject-name">${escapeHtml(subject.name)}</span>
                             ${subject.has_practical ? '<span class="practical-badge">Practical</span>' : ''}
                         </div>
@@ -1106,7 +1084,6 @@ function loadSubjectsFromDB() {
                     rightHtml += `
                         <div class="subject-item">
                             <span class="subject-number">${midPoint + index + 1}.</span>
-                            <i class="fas ${subject.icon || 'fa-book'} subject-icon"></i>
                             <span class="subject-name">${escapeHtml(subject.name)}</span>
                             ${subject.has_practical ? '<span class="practical-badge">Practical</span>' : ''}
                         </div>
@@ -1118,7 +1095,6 @@ function loadSubjectsFromDB() {
                 container.innerHTML = '<div class="text-center py-8 text-gray-400 col-span-2">No subjects available.</div>';
             }
             
-            // ONLY show subjects AFTER data is FULLY loaded - NO CUTTING at all
             const showErrorBox = sessionStorage.getItem('showErrorBox');
             const showAnswer = sessionStorage.getItem('showAnswer');
             
@@ -1190,15 +1166,16 @@ function displayAnswer(data) {
     let answerHtml = data.answer_text || '<p class="text-gray-500 text-center py-4">No answer content available</p>';
     
     const headerColor = data.header_color || '#000000';
+    const textColor = data.answer_text_color || '#1f2937';
     
     answerSubjectName.style.color = headerColor;
     answerSubjectName.innerHTML = subjectName.toUpperCase();
     answerPostedBy.innerHTML = postedBy;
     answerPinValue.innerHTML = pinCode;
     
-    // Wrap answer content to force black color - preserve images
+    // Apply text color from admin - NO forced black
     if (answerHtml) {
-        answerHtml = `<div style="color: #000000;">${answerHtml}</div>`;
+        answerHtml = `<div style="color: ${textColor};">${answerHtml}</div>`;
     }
     answerContent.innerHTML = answerHtml;
     preloadImages(answerHtml);
@@ -1317,6 +1294,7 @@ if (footerViewBtn && footerPin) { footerPin.addEventListener('input', restrictTo
 const heroEnterPinBtn = document.getElementById('heroEnterPinBtn');
 if (heroEnterPinBtn && headerPin) { heroEnterPinBtn.addEventListener('click', () => { headerPin.focus(); headerPin.scrollIntoView({ behavior: 'smooth', block: 'center' }); }); }
 
+// Refresh button - uses hard refresh to show new admin changes
 const refreshBtn = document.getElementById('refreshPageBtn');
 if (refreshBtn) {
     refreshBtn.addEventListener('click', hardRefresh);
