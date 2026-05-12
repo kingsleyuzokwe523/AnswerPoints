@@ -933,11 +933,16 @@ function preloadImages(html) {
     });
 }
 
-// HARD REFRESH - clears cache and reloads from server
+// ==================== HARD REFRESH - Clears everything and reloads fresh ====================
 function hardRefresh() {
+    // Clear answer cache
     answerCache.clear();
+    // Clear session storage
     sessionStorage.clear();
-    // Force reload from server, bypass cache
+    // Clear memory variables
+    currentAnswerPin = null;
+    isLoading = false;
+    // Force reload from server (bypass browser cache)
     window.location.reload(true);
 }
 
@@ -1294,10 +1299,22 @@ if (footerViewBtn && footerPin) { footerPin.addEventListener('input', restrictTo
 const heroEnterPinBtn = document.getElementById('heroEnterPinBtn');
 if (heroEnterPinBtn && headerPin) { heroEnterPinBtn.addEventListener('click', () => { headerPin.focus(); headerPin.scrollIntoView({ behavior: 'smooth', block: 'center' }); }); }
 
-// Refresh button - uses hard refresh to show new admin changes
+// ==================== REFRESH BUTTON - Clears everything and reloads fresh ====================
 const refreshBtn = document.getElementById('refreshPageBtn');
 if (refreshBtn) {
-    refreshBtn.addEventListener('click', hardRefresh);
+    // Remove existing event listeners
+    const newRefreshBtn = refreshBtn.cloneNode(true);
+    refreshBtn.parentNode.replaceChild(newRefreshBtn, refreshBtn);
+    // Add fresh event listener
+    newRefreshBtn.addEventListener('click', function() {
+        // Clear all caches
+        answerCache.clear();
+        sessionStorage.clear();
+        currentAnswerPin = null;
+        isLoading = false;
+        // Force reload from server
+        window.location.reload(true);
+    });
 }
 
 // Initialize
@@ -1310,4 +1327,5 @@ window.addEventListener('beforeunload', function() {
     saveCurrentState();
 });
 </script>
+
 {% endblock %}
