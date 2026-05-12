@@ -75,6 +75,9 @@
         .footer-banner a:hover {
             text-decoration: underline;
         }
+        .footer-banner .facebook-link {
+            color: #1877f2;
+        }
         body {
             padding-bottom: 70px;
         }
@@ -100,11 +103,10 @@
         #pinCode.success {
             border-color: #28a745;
             background-color: #f0fdf4;
-            
+        }
         #subjectName {
-    font-size: 10px;
-    font-weight: 400;
-}
+            font-size: 10px;
+            font-weight: 400;
         }
         #pinCheck.error {
             color: #dc2626;
@@ -172,7 +174,7 @@
             </div>
         </div>
 
-        <!-- EDIT HOME PAGE CONTENT -->
+        <!-- EDIT HOME PAGE CONTENT - ADDED FACEBOOK LINK -->
         <div id="home-content-section" class="section-content hidden">
             <h1 class="text-3xl font-bold mb-6">Edit Home Page Content</h1>
             <div class="grid lg:grid-cols-2 gap-6">
@@ -185,6 +187,7 @@
                     <div class="bg-white rounded-lg shadow p-6"><h2 class="text-xl font-bold mb-4 border-b pb-2">Social & VIP</h2>
                         <div class="space-y-4"><div><label class="block font-bold mb-2">WhatsApp Link</label><input type="url" id="whatsapp_link" class="w-full px-3 py-2 border rounded"></div>
                         <div><label class="block font-bold mb-2">Telegram Link</label><input type="url" id="telegram_link" class="w-full px-3 py-2 border rounded"></div>
+                        <div><label class="block font-bold mb-2">Facebook Link</label><input type="url" id="facebook_link" class="w-full px-3 py-2 border rounded" placeholder="https://facebook.com/yourpage"></div>
                         <div><label class="block font-bold mb-2">VIP Text</label><input type="text" id="vip_text" class="w-full px-3 py-2 border rounded"></div>
                         <div><label class="block font-bold mb-2">VIP Number</label><input type="text" id="vip_number" class="w-full px-3 py-2 border rounded"></div>
                         <div><label class="block font-bold mb-2">Support Email</label><input type="email" id="support_email" class="w-full px-3 py-2 border rounded"></div></div>
@@ -199,6 +202,8 @@
                     <div id="livePreview" class="preview-box space-y-4">
                         <div class="bg-blue-700 p-4 text-white text-center"><h1 id="preview_hero_title" class="text-2xl font-bold">AnswerPoint</h1><p id="preview_hero_text" class="text-sm mt-2"></p></div>
                         <div class="bg-green-600 p-3 text-white text-center" id="preview_whatsapp">Join WhatsApp</div>
+                        <div class="bg-blue-600 p-3 text-white text-center" id="preview_telegram">Join Telegram</div>
+                        <div class="bg-blue-800 p-3 text-white text-center" id="preview_facebook">Join Facebook</div>
                         <div class="bg-red-600 p-3 text-white text-center" id="preview_vip"></div>
                     </div>
                 </div>
@@ -225,7 +230,7 @@
             </div>
         </div>
 
-        <!-- CREATE PIN SECTION - REMOVED LIVE PREVIEW -->
+        <!-- CREATE PIN SECTION -->
         <div id="create-pin-section" class="section-content hidden">
             <h1 class="text-3xl font-bold mb-6" id="formTitle">Create New PIN</h1>
             
@@ -242,11 +247,11 @@
 
                     <!-- Subject -->
                     <div>
-    <label class="block font-bold mb-2 text-sm md:text-base" style="color: #28a745;">Subject:</label>
-    <input type="text" id="subjectName"
-           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-[8px] md:text-[10px] font-normal text-center"
-           placeholder="e.g., MATHEMATICS" required>
-</div>
+                        <label class="block font-bold mb-2 text-sm md:text-base" style="color: #28a745;">Subject:</label>
+                        <input type="text" id="subjectName"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-[8px] md:text-[10px] font-normal text-center"
+                               placeholder="e.g., MATHEMATICS" required>
+                    </div>
 
                     <!-- PIN Code -->
                     <div>
@@ -269,7 +274,7 @@
                     <!-- Answer Text Color -->
                     <div>
                         <label class="block font-bold mb-2 text-sm md:text-base" style="color: #28a745;">Answer Text Color:</label>
-                        <input type="color" id="answerTextColor" value="#1f2937"
+                        <input type="color" id="answerTextColor" value="#000000"
                                class="w-full h-10 md:h-12 border border-gray-300 rounded cursor-pointer">
                     </div>
                 </div>
@@ -360,17 +365,14 @@
     </div>
 </div>
 
-<!-- Footer Banner -->
+<!-- Footer Banner with Facebook Link -->
 <div class="footer-banner">
     <div class="container mx-auto">
-        <p class="text-sm">
-            <i class="fab fa-whatsapp mr-2"></i>
-            <strong>Join our WhatsApp Channel:</strong>
-            <a href="#" id="footerWhatsAppLink" target="_blank">Click Here for Instant Updates</a>
-            | <i class="fab fa-telegram mr-1"></i>
-            <strong>Telegram:</strong>
-            <a href="#" id="footerTelegramLink" target="_blank">Join Telegram</a>
-        </p>
+        <div class="flex flex-wrap justify-center gap-4 text-sm">
+            <div><i class="fab fa-whatsapp mr-2"></i><strong>WhatsApp:</strong> <a href="#" id="footerWhatsAppLink" target="_blank">Join Channel</a></div>
+            <div><i class="fab fa-telegram mr-2"></i><strong>Telegram:</strong> <a href="#" id="footerTelegramLink" target="_blank">Join Channel</a></div>
+            <div><i class="fab fa-facebook-f mr-2"></i><strong>Facebook:</strong> <a href="#" id="footerFacebookLink" target="_blank" style="color: #1877f2;">Join Page</a></div>
+        </div>
     </div>
 </div>
 
@@ -575,7 +577,7 @@ function submitPin() {
         });
 }
 
-// ==================== HOME CONTENT ====================
+// ==================== HOME CONTENT - ADDED FACEBOOK ====================
 function loadHomeContent() {
     fetch('/admin/get_home_content').then(res => res.json()).then(data => {
         document.getElementById('hero_title').value = data.hero_title || '';
@@ -583,6 +585,7 @@ function loadHomeContent() {
         document.getElementById('moving_tagline').value = data.moving_tagline || '';
         document.getElementById('whatsapp_link').value = data.whatsapp_link || '';
         document.getElementById('telegram_link').value = data.telegram_link || '';
+        document.getElementById('facebook_link').value = data.facebook_link || '';
         document.getElementById('vip_text').value = data.vip_text || '';
         document.getElementById('vip_number').value = data.vip_number || '';
         document.getElementById('support_email').value = data.support_email || '';
@@ -595,6 +598,9 @@ function loadHomeContent() {
         if (data.telegram_link) {
             document.getElementById('footerTelegramLink').href = data.telegram_link;
         }
+        if (data.facebook_link) {
+            document.getElementById('footerFacebookLink').href = data.facebook_link;
+        }
     });
 }
 
@@ -602,6 +608,8 @@ function updatePreview() {
     document.getElementById('preview_hero_title').innerText = document.getElementById('hero_title').value || 'AnswerPoint';
     document.getElementById('preview_hero_text').innerText = document.getElementById('hero_text').value || '';
     document.getElementById('preview_whatsapp').innerHTML = '<i class="fab fa-whatsapp mr-2"></i>' + (document.getElementById('whatsapp_link').value ? 'Join WhatsApp' : 'WhatsApp');
+    document.getElementById('preview_telegram').innerHTML = '<i class="fab fa-telegram mr-2"></i>' + (document.getElementById('telegram_link').value ? 'Join Telegram' : 'Telegram');
+    document.getElementById('preview_facebook').innerHTML = '<i class="fab fa-facebook-f mr-2"></i>' + (document.getElementById('facebook_link').value ? 'Join Facebook' : 'Facebook');
     document.getElementById('preview_vip').innerHTML = (document.getElementById('vip_text').value || 'VIP') + ' <strong>' + document.getElementById('vip_number').value + '</strong>';
 }
 
@@ -612,6 +620,7 @@ function saveHomeContent() {
         moving_tagline: document.getElementById('moving_tagline').value,
         whatsapp_link: document.getElementById('whatsapp_link').value,
         telegram_link: document.getElementById('telegram_link').value,
+        facebook_link: document.getElementById('facebook_link').value,
         vip_text: document.getElementById('vip_text').value,
         vip_number: document.getElementById('vip_number').value,
         support_email: document.getElementById('support_email').value,
@@ -758,7 +767,7 @@ function editPin(id) {
             document.getElementById('subjectName').value = data.subject_name || '';
             document.getElementById('postedBy').value = data.posted_by || 'AnswerPoint';
             document.getElementById('headerColor').value = data.header_color || '#ffffff';
-            document.getElementById('answerTextColor').value = data.answer_text_color || '#1f2937';
+            document.getElementById('answerTextColor').value = data.answer_text_color || '#000000';
             if (quillEditor) {
                 quillEditor.root.innerHTML = data.answer_text || '';
                 setTimeout(makeImagesDraggable, 200);
@@ -776,7 +785,7 @@ function resetForm() {
     document.getElementById('subjectName').value = '';
     document.getElementById('postedBy').value = 'AnswerPoint';
     document.getElementById('headerColor').value = '#ffffff';
-    document.getElementById('answerTextColor').value = '#1f2937';
+    document.getElementById('answerTextColor').value = '#000000';
     document.getElementById('pinCheck').innerHTML = '';
     if (quillEditor) quillEditor.root.innerHTML = '';
 }
@@ -858,6 +867,7 @@ document.getElementById('hero_title')?.addEventListener('input', updatePreview);
 document.getElementById('hero_text')?.addEventListener('input', updatePreview);
 document.getElementById('whatsapp_link')?.addEventListener('input', updatePreview);
 document.getElementById('telegram_link')?.addEventListener('input', updatePreview);
+document.getElementById('facebook_link')?.addEventListener('input', updatePreview);
 document.getElementById('vip_text')?.addEventListener('input', updatePreview);
 document.getElementById('vip_number')?.addEventListener('input', updatePreview);
 document.getElementById('pinSearch')?.addEventListener('input', loadPins);
