@@ -189,25 +189,36 @@
         margin: 0;
     }
     
-    /* Subjects Grid - 2 columns on all devices */
+    /* Subjects Grid - Fixed 2 columns, NO CUTTING */
     .subjects-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px 40px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px 30px;
         margin-bottom: 20px;
+        width: 100%;
+        overflow: visible;
+    }
+    
+    .subjects-column {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
     }
     
     .subject-item {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 8px;
-        padding: 3px 0;
+        padding: 4px 0;
+        width: 100%;
+        overflow: visible;
+        word-wrap: break-word;
     }
     
     .subject-number {
         color: #9ca3af;
         font-size: 11px;
-        width: 24px;
+        min-width: 24px;
         flex-shrink: 0;
     }
     
@@ -216,6 +227,7 @@
         font-size: 11px;
         width: 14px;
         flex-shrink: 0;
+        margin-top: 1px;
     }
     
     .subject-name {
@@ -223,6 +235,7 @@
         font-size: 11px;
         flex: 1;
         word-break: break-word;
+        line-height: 1.4;
     }
     
     .hotupdates-inner-box {
@@ -266,6 +279,7 @@
         text-decoration: none;
         font-size: 11px;
         font-weight: 500;
+        word-break: break-word;
     }
     
     .timetable-link i {
@@ -337,7 +351,7 @@
         gap: 6px;
     }
     
-    /* Mobile View - Keep 2 columns */
+    /* Mobile View - Keep 2 columns, NO CUTTING */
     @media (max-width: 640px) {
         .answer-subject {
             font-size: calc(1.25rem - 4px);
@@ -349,19 +363,19 @@
         
         .hero-buttons a, 
         .hero-buttons button {
-            padding: 6px 10px;
+            padding: 6px 8px;
             font-size: 10px;
         }
         
-        /* Keep 2 columns on mobile */
+        /* Keep exactly 2 columns on mobile - NO CUTTING */
         .subjects-grid {
-            grid-template-columns: 1fr 1fr;
-            gap: 8px 16px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px 12px;
         }
         
         .subject-number {
             font-size: 9px;
-            width: 20px;
+            min-width: 20px;
         }
         
         .subject-name {
@@ -458,16 +472,15 @@
         }
     }
     
-    /* Extra small devices - still 2 columns */
     @media (max-width: 480px) {
         .subjects-grid {
-            grid-template-columns: 1fr 1fr;
-            gap: 6px 12px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px 10px;
         }
         
         .subject-number {
             font-size: 8px;
-            width: 18px;
+            min-width: 18px;
         }
         
         .subject-name {
@@ -477,7 +490,7 @@
         .hero-buttons a, 
         .hero-buttons button {
             font-size: 9px;
-            padding: 5px 8px;
+            padding: 5px 6px;
         }
     }
 </style>
@@ -532,21 +545,9 @@
         </div>
     </div>
 
-    <!-- Social Channels -->
-    <div class="mb-4 space-y-3">
-        <a href="{{ whatsapp_link }}" target="_blank" class="block bg-green-600 hover:bg-green-700 transition p-3 flex items-center justify-center gap-3 shadow border border-green-500 rounded-lg">
-            <i class="fab fa-whatsapp text-xl text-white"></i>
-            <span class="text-sm font-bold text-white">Join Our WhatsApp Channel</span>
-        </a>
-        <a href="{{ telegram_link }}" target="_blank" class="block bg-blue-600 hover:bg-blue-700 transition p-3 flex items-center justify-center gap-3 shadow border border-blue-500 rounded-lg">
-            <i class="fab fa-telegram-plane text-xl text-white"></i>
-            <span class="text-sm font-bold text-white">Join Our Telegram Channel</span>
-        </a>
-    </div>
-
     <!-- VIP Banner -->
     <div class="bg-red-600 p-3 mb-4 text-center shadow border border-red-500 rounded-lg">
-        <p class="text-white font-semibold text-sm">{{ vip_text }}</p>
+        <p class="text-white font-semibold text-sm">Want early VIP answers before the exam?</p>
         <p class="text-white mt-1 text-xs"><i class="fab fa-whatsapp mr-1"></i> Message <strong>{{ vip_number }}</strong> on WhatsApp</p>
     </div>
 
@@ -581,7 +582,7 @@
     <div id="answerSection" class="hidden mb-4">
         <div class="answer-outer-container">
             <div class="text-center pt-4 pb-2">
-                <button onclick="refreshPageAndReset()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition flex items-center gap-2 mx-auto shadow-md">
+                <button onclick="window.location.reload()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition flex items-center gap-2 mx-auto shadow-md">
                     <i class="fas fa-sync-alt"></i> Refresh Page
                 </button>
             </div>
@@ -628,7 +629,7 @@
         </div>
     </div>
 
-    <!-- SUBJECTS SECTION - HIDDEN UNTIL FULLY LOADED -->
+    <!-- SUBJECTS SECTION -->
     <div id="subjectsSection" style="display: none;">
         <div class="main-outer-container">
             <div class="main-inner-box">
@@ -703,75 +704,6 @@ function preloadImages(html) {
     });
 }
 
-// Refresh page and reset to clean state (no partial display)
-function refreshPageAndReset() {
-    // Clear all session storage to ensure clean reload
-    sessionStorage.clear();
-    window.location.reload();
-}
-
-// Save current state to sessionStorage
-function saveCurrentState() {
-    const errorBox = document.getElementById('pinErrorBox');
-    const subjectsSection = document.getElementById('subjectsSection');
-    const answerSection = document.getElementById('answerSection');
-    
-    if (errorBox && !errorBox.classList.contains('hidden')) {
-        sessionStorage.setItem('showErrorBox', 'true');
-        sessionStorage.removeItem('showSubjects');
-        sessionStorage.removeItem('showAnswer');
-    } else if (answerSection && !answerSection.classList.contains('hidden')) {
-        sessionStorage.setItem('showAnswer', 'true');
-        sessionStorage.removeItem('showErrorBox');
-        sessionStorage.removeItem('showSubjects');
-    } else if (subjectsSection && subjectsSection.style.display === 'block') {
-        sessionStorage.setItem('showSubjects', 'true');
-        sessionStorage.removeItem('showErrorBox');
-        sessionStorage.removeItem('showAnswer');
-    }
-}
-
-// Restore state after page refresh
-function restoreState() {
-    const showErrorBox = sessionStorage.getItem('showErrorBox');
-    const showAnswer = sessionStorage.getItem('showAnswer');
-    const showSubjects = sessionStorage.getItem('showSubjects');
-    
-    const errorBox = document.getElementById('pinErrorBox');
-    const subjectsSection = document.getElementById('subjectsSection');
-    const answerSection = document.getElementById('answerSection');
-    
-    // Clear any existing display states first
-    if (subjectsSection) subjectsSection.style.display = 'none';
-    if (errorBox) errorBox.classList.add('hidden');
-    if (answerSection) answerSection.classList.add('hidden');
-    
-    if (showErrorBox === 'true') {
-        if (errorBox) errorBox.classList.remove('hidden');
-        if (subjectsSection) subjectsSection.style.display = 'none';
-        if (answerSection) answerSection.classList.add('hidden');
-    } else if (showAnswer === 'true') {
-        const savedPin = sessionStorage.getItem('current_viewing_pin');
-        if (savedPin) {
-            const cached = sessionStorage.getItem(`answer_${savedPin}`);
-            if (cached) {
-                try {
-                    const data = JSON.parse(cached);
-                    if (subjectsSection) subjectsSection.style.display = 'none';
-                    if (answerSection) {
-                        displayAnswer(data);
-                        currentAnswerPin = savedPin;
-                    }
-                } catch(e) {}
-            }
-        }
-    } else if (showSubjects === 'true') {
-        if (subjectsSection) subjectsSection.style.display = 'block';
-        if (errorBox) errorBox.classList.add('hidden');
-        if (answerSection) answerSection.classList.add('hidden');
-    }
-}
-
 function resetToHomepage() {
     currentAnswerPin = null;
     isLoading = false;
@@ -812,7 +744,7 @@ function loadSubjectsFromDB() {
     const container = document.getElementById('dynamicSubjectsList');
     const subjectsSection = document.getElementById('subjectsSection');
     
-    // Keep subjects hidden until fully loaded to prevent partial/cutting display
+    // Start hidden to prevent cutting
     subjectsSection.style.display = 'none';
     
     fetch('/get_subjects_api')
@@ -850,21 +782,13 @@ function loadSubjectsFromDB() {
                 container.innerHTML = '<div class="text-center py-8 text-gray-400 col-span-2">No subjects available.</div>';
             }
             
-            // Only show subjects after FULLY loaded (no cutting/partial display)
-            // Check if we need to show error box instead
-            const showErrorBox = sessionStorage.getItem('showErrorBox');
-            if (!showErrorBox || showErrorBox !== 'true') {
-                subjectsSection.style.display = 'block';
-                sessionStorage.setItem('showSubjects', 'true');
-            }
+            // Only show after FULLY loaded - NO CUTTING
+            subjectsSection.style.display = 'block';
         })
         .catch(error => {
             console.error('Error loading subjects:', error);
             container.innerHTML = '<div class="text-center py-8 text-red-400 col-span-2">Error loading subjects. Please refresh.</div>';
-            const showErrorBox = sessionStorage.getItem('showErrorBox');
-            if (!showErrorBox || showErrorBox !== 'true') {
-                subjectsSection.style.display = 'block';
-            }
+            subjectsSection.style.display = 'block';
         });
 }
 
@@ -880,9 +804,6 @@ function showTimetable() {
     const subjectsSection = document.getElementById('subjectsSection');
     const answerContent = document.getElementById('answerContent');
     if (subjectsSection) subjectsSection.style.display = 'none';
-    sessionStorage.setItem('showAnswer', 'true');
-    sessionStorage.removeItem('showSubjects');
-    sessionStorage.removeItem('showErrorBox');
     fetch('/get_timetable_html').then(res => res.text()).then(html => {
         answerContent.innerHTML = html;
         preloadImages(html);
@@ -924,17 +845,10 @@ function displayAnswer(data) {
     answerContent.innerHTML = answerHtml;
     preloadImages(answerHtml);
     
-    // Hide subjects and error box, show answer
     subjectsSection.style.display = 'none';
     errorBox.classList.add('hidden');
     answerSection.classList.remove('hidden');
     answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    
-    // Save state
-    sessionStorage.setItem('showAnswer', 'true');
-    sessionStorage.removeItem('showSubjects');
-    sessionStorage.removeItem('showErrorBox');
-    if (pinCode) sessionStorage.setItem('current_viewing_pin', pinCode);
 }
 
 function validateAndGetAnswer(pinInputElement) {
@@ -957,7 +871,6 @@ function validateAndGetAnswer(pinInputElement) {
     const errorBox = document.getElementById('pinErrorBox');
 
     if (answerCache.has(pinCode)) {
-        // Hide subjects, show answer
         subjectsSection.style.display = 'none';
         errorBox.classList.add('hidden');
         displayAnswer(answerCache.get(pinCode));
@@ -965,42 +878,30 @@ function validateAndGetAnswer(pinInputElement) {
         return;
     }
 
-    // NO loading spinner - page stays exactly as is
     isLoading = true;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     fetch('/get_answer', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'pin_code=' + pinCode,
-        signal: controller.signal
+        body: 'pin_code=' + pinCode
     })
-    .then(response => { clearTimeout(timeoutId); return response.json(); })
+    .then(response => response.json())
     .then(data => {
         isLoading = false;
         if (data.success) {
-            // PIN correct - hide subjects, show answer
             subjectsSection.style.display = 'none';
             errorBox.classList.add('hidden');
             data.pin_code = pinCode;
             answerCache.set(pinCode, data);
-            try { sessionStorage.setItem(`answer_${pinCode}`, JSON.stringify(data)); sessionStorage.setItem('current_viewing_pin', pinCode); } catch(e) {}
             currentAnswerPin = pinCode;
             displayAnswer(data);
         } else {
-            // PIN incorrect - show error box, HIDE SUBJECTS
             subjectsSection.style.display = 'none';
             answerSection.classList.add('hidden');
             errorBox.classList.remove('hidden');
             errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
             pinInputElement.value = '';
             currentAnswerPin = null;
-            sessionStorage.removeItem('current_viewing_pin');
-            // Save error box state for refresh
-            sessionStorage.setItem('showErrorBox', 'true');
-            sessionStorage.removeItem('showSubjects');
-            sessionStorage.removeItem('showAnswer');
         }
     })
     .catch(error => {
@@ -1019,11 +920,6 @@ function goBackToHomepage() {
     answerSection.classList.add('hidden');
     subjectsSection.style.display = 'block';
     currentAnswerPin = null;
-    
-    sessionStorage.removeItem('current_viewing_pin');
-    sessionStorage.removeItem('showErrorBox');
-    sessionStorage.removeItem('showAnswer');
-    sessionStorage.setItem('showSubjects', 'true');
 }
 
 function restrictToNumbers(event) { const input = event.target; input.value = input.value.replace(/[^0-9]/g, ''); }
@@ -1044,24 +940,9 @@ if (footerViewBtn && footerPin) { footerPin.addEventListener('input', restrictTo
 const heroEnterPinBtn = document.getElementById('heroEnterPinBtn');
 if (heroEnterPinBtn && headerPin) { heroEnterPinBtn.addEventListener('click', () => { headerPin.focus(); headerPin.scrollIntoView({ behavior: 'smooth', block: 'center' }); }); }
 
-// Initialize - subjects hidden until fully loaded (prevents partial/cutting display)
+// Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    const subjectsSection = document.getElementById('subjectsSection');
-    subjectsSection.style.display = 'none';
     loadSubjectsFromDB();
-    restoreState();
 });
-
-// Save state before page refresh
-window.addEventListener('beforeunload', function() {
-    saveCurrentState();
-});
-
-// Override refresh button to clear state and prevent partial display
-const refreshButton = document.querySelector('button[onclick*="window.location.reload()"]');
-if (refreshButton) {
-    refreshButton.removeAttribute('onclick');
-    refreshButton.addEventListener('click', refreshPageAndReset);
-}
 </script>
 {% endblock %}
