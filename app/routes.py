@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, session, send_fr
 from app import db
 from app.models import Subject, Pin, Image, HomeContent, ExamTimetable, SiteSettings
 import os
+import re
 
 # ==================== BLUEPRINT INITIALIZATION ====================
 main_bp = Blueprint('main', __name__)
@@ -37,6 +38,7 @@ def debug_templates():
         'template_folder_setting': template_folder,
         'locations_checked': results
     })
+
 @main_bp.route('/static/uploads/<path:filename>')
 def serve_upload(filename):
     """Serve uploaded files from static/uploads directory"""
@@ -91,7 +93,6 @@ def check_image_paths():
     results = []
     for pin in pins_with_images:
         # Extract image src from answer_text
-        import re
         images = re.findall(r'src="([^"]+)"', pin.answer_text)
         for img in images:
             # Check if file exists
@@ -198,7 +199,7 @@ def debug_images():
 @main_bp.route('/')
 def index():
     """Home page"""
-    # Get home content
+    # Get home content - ADDED facebook_link
     hero_title = HomeContent.query.filter_by(section='hero_title').first()
     hero_text = HomeContent.query.filter_by(section='hero_text').first()
     moving_tagline = HomeContent.query.filter_by(section='moving_tagline').first()
@@ -206,6 +207,7 @@ def index():
     instructions = HomeContent.query.filter_by(section='instructions').first()
     whatsapp_link = HomeContent.query.filter_by(section='whatsapp_link').first()
     telegram_link = HomeContent.query.filter_by(section='telegram_link').first()
+    facebook_link = HomeContent.query.filter_by(section='facebook_link').first()  # ADDED
     footer_text = HomeContent.query.filter_by(section='footer_text').first()
     vip_text = HomeContent.query.filter_by(section='vip_text').first()
     vip_number = HomeContent.query.filter_by(section='vip_number').first()
@@ -237,6 +239,7 @@ def index():
                            hot_updates_text=hot_updates_text.content if hot_updates_text else "2026 WAEC MAY/JUNE FINAL EXAMINATION TIMETABLE",
                            whatsapp_link=whatsapp_link.content if whatsapp_link else "#",
                            telegram_link=telegram_link.content if telegram_link else "#",
+                           facebook_link=facebook_link.content if facebook_link else "#",  # ADDED
                            vip_text=vip_text.content if vip_text else "Want early VIP answers before the exam?",
                            vip_number=vip_number.content if vip_number else "08065582389",
                            support_email=support_email.content if support_email else "support@answerpoint.com",
@@ -254,7 +257,7 @@ def index():
 
 @main_bp.route('/get_answer', methods=['POST'])
 def get_answer():
-    """Get answer for a PIN with proper image path handling"""
+    """Get answer for a PIN with proper image path handling - IMAGES NEVER EXPIRE"""
     pin_code = request.form.get('pin_code', '').strip()
 
     print(f"🔍 Looking for PIN: {pin_code}")
@@ -278,63 +281,34 @@ def get_answer():
     if not answer_text:
         answer_text = '<p>No answer content available for this PIN.</p>'
 
-    # IMPROVED IMAGE PATH FIXING
+    # FIXED: Clean and fix image paths - images stay forever
     if answer_text and '<img' in answer_text:
-        import re
-
-        # Function to clean and fix image paths
         def fix_image_path(match):
             src = match.group(1)
             original_src = src
-
+            
             # Remove quotes if present
             src = src.strip('\'"')
-
-            # Skip external URLs, data URIs, and absolute URLs
+            
+            # Skip external URLs and data URIs
             if src.startswith(('http://', 'https://', 'data:', '//')):
                 return f'src="{src}"'
-
-            # Clean up the path
-            # Remove leading slashes, dots, and common problem patterns
-            src = re.sub(r'^\.?/\.?/?', '', src)
-            src = re.sub(r'^static/uploads/static/uploads/', 'static/uploads/', src)
-            src = re.sub(r'^uploads/uploads/', 'uploads/', src)
-
-            # Check for filename patterns (PIN images are like: pin_123_abc.png)
+            
+            # If already a valid /static/uploads/pins/ path, keep it
+            if src.startswith('/static/uploads/pins/'):
+                return f'src="{src}"'
+            
+            # Extract filename from path
             filename = src.split('/')[-1]
-
-            # Determine correct path based on file location
-            if filename.startswith('pin_') or 'pin_' in filename:
-                # PIN images should be in pins folder
-                corrected_path = f'/static/uploads/pins/{filename}'
-            elif src.startswith('pins/') or '/pins/' in src:
-                # Already pointing to pins folder but might need correction
-                corrected_path = f'/static/uploads/{src}'
-                corrected_path = corrected_path.replace('/static/uploads/pins//', '/static/uploads/pins/')
-            elif src.startswith('static/uploads/'):
-                # Good path but might need leading slash
-                corrected_path = f'/{src}'
-            elif src.startswith('uploads/'):
-                corrected_path = f'/static/{src}'
-            else:
-                # Default fallback - try both locations
-                corrected_path = f'/static/uploads/{filename}'
-
-            # Remove any double slashes
-            corrected_path = re.sub(r'/(?=/)', '', corrected_path)
-
+            
+            # Always use the correct path for stored images
+            corrected_path = f'/static/uploads/pins/{filename}'
+            
             print(f"📸 Fixed image path: {original_src} -> {corrected_path}")
             return f'src="{corrected_path}"'
-
+        
         # Apply the fix to all img src attributes
         answer_text = re.sub(r'src=["\']([^"\' ]+)["\']', fix_image_path, answer_text)
-
-        # Also handle background images and other URLs
-        answer_text = re.sub(r'url\(["\']?([^"\'\)]+)["\']?\)',
-                            lambda m: f'url("{fix_image_path(m).replace("src=", "").strip()}")',
-                            answer_text)
-
-        print(f"✅ Fixed {answer_text.count('<img')} images in PIN {pin_code}")
 
     return jsonify({
         'success': True,
@@ -342,7 +316,7 @@ def get_answer():
         'subject_name': pin.subject_name or 'Unknown',
         'posted_by': getattr(pin, 'posted_by', 'AnswerPoint'),
         'pin_code': pin.pin_code,
-        'answer_text_color': getattr(pin, 'answer_text_color', '#1f2937')
+        'answer_text_color': getattr(pin, 'answer_text_color', '#000000')  # Changed to BLACK default
     })
 
 @main_bp.route('/subjects')
@@ -366,9 +340,9 @@ def subjects():
 
 @main_bp.route('/api/home_content')
 def api_home_content():
-    """API endpoint for home content"""
+    """API endpoint for home content - ADDED facebook_link"""
     sections = ['hero_title', 'hero_text', 'announcement', 'instructions',
-                'whatsapp_link', 'telegram_link', 'footer_text', 'moving_tagline',
+                'whatsapp_link', 'telegram_link', 'facebook_link', 'footer_text', 'moving_tagline',
                 'vip_text', 'vip_number', 'need_help_text', 'hot_updates_text', 'support_email']
     content = {}
     for section in sections:
@@ -456,7 +430,7 @@ def get_timetable_html():
             html += '<div><div class="font-bold text-yellow-100 mb-2">NECO Timetable</div>'
             html += f'<pre class="text-xs text-gray-300 whitespace-pre-wrap">{neco_text.setting_value}</pre></div>'
 
-        if not waec_text and not neco_text:
+        if (not waec_text or not waec_text.setting_value) and (not neco_text or not neco_text.setting_value):
             html += '<p class="text-gray-400 text-center py-4">No timetable entries added yet. Admin can add them.</p>'
 
     html += '</div>'
