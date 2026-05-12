@@ -7,34 +7,7 @@
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     }
     
-    /* Loading overlay - favicon only */
-    .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        z-index: 9999;
-        display: none;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .loading-overlay.active {
-        display: flex;
-    }
-    
-    .favicon-loader {
-        width: 48px;
-        height: 48px;
-        animation: spin 0.6s linear infinite;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
+    /* No loading overlay - using browser tab favicon only */
     
     .answer-text {
         line-height: 1.6;
@@ -72,6 +45,12 @@
     
     input[type="tel"] {
         -moz-appearance: textfield;
+    }
+    
+    @keyframes loadingMove {
+        0% { width: 10%; margin-left: 0%; }
+        50% { width: 40%; margin-left: 30%; }
+        100% { width: 10%; margin-left: 80%; }
     }
     
     .sticky-top {
@@ -475,11 +454,6 @@
     }
 </style>
 
-<!-- Loading Overlay - Favicon only -->
-<div id="loadingOverlay" class="loading-overlay">
-    <img src="{{ url_for('static', filename='favicon.ico') }}" alt="Loading" class="favicon-loader">
-</div>
-
 <!-- ================= STICKY HEADER ================= -->
 <div class="sticky-top bg-gradient-to-r from-blue-800 via-blue-700 to-blue-800 shadow-lg z-50 border-b border-blue-600">
     <div class="max-w-[750px] mx-auto px-3 py-2">
@@ -626,8 +600,8 @@
         </div>
     </div>
 
-    <!-- SUBJECTS SECTION - Hidden until fully loaded -->
-    <div id="subjectsSection" style="display: none;">
+    <!-- SUBJECTS SECTION -->
+    <div id="subjectsSection" style="display: block;">
         <div class="main-outer-container">
             <div class="main-inner-box">
                 <div class="subjects-header">
@@ -687,39 +661,6 @@ let isLoading = false;
 const answerCache = new Map();
 const imageCache = new Set();
 
-// Check if we were on error box before refresh
-function checkSavedState() {
-    const savedErrorState = sessionStorage.getItem('showErrorBox');
-    const savedSubjectsHidden = sessionStorage.getItem('subjectsHidden');
-    
-    if (savedErrorState === 'true') {
-        document.getElementById('pinErrorBox').classList.remove('hidden');
-        document.getElementById('subjectsSection').style.display = 'none';
-        sessionStorage.removeItem('showErrorBox');
-    } else if (savedSubjectsHidden === 'true') {
-        document.getElementById('subjectsSection').style.display = 'none';
-        sessionStorage.removeItem('subjectsHidden');
-    } else {
-        // Normal flow - subjects will show after loading
-    }
-}
-
-function saveErrorState() {
-    sessionStorage.setItem('showErrorBox', 'true');
-}
-
-function clearErrorState() {
-    sessionStorage.removeItem('showErrorBox');
-}
-
-function showLoading() {
-    document.getElementById('loadingOverlay').classList.add('active');
-}
-
-function hideLoading() {
-    document.getElementById('loadingOverlay').classList.remove('active');
-}
-
 function preloadImages(html) {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
@@ -763,7 +704,6 @@ function resetToHomepage() {
     if (errorPinInput) errorPinInput.value = '';
     
     sessionStorage.removeItem('current_viewing_pin');
-    clearErrorState();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -804,19 +744,10 @@ function loadSubjectsFromDB() {
             } else {
                 container.innerHTML = '<div class="text-center py-8 text-gray-400 col-span-2">No subjects available.</div>';
             }
-            
-            // Subjects loaded successfully - check if we need to show error box or subjects
-            const savedErrorState = sessionStorage.getItem('showErrorBox');
-            if (!savedErrorState || savedErrorState !== 'true') {
-                document.getElementById('subjectsSection').style.display = 'block';
-            }
-            hideLoading();
         })
         .catch(error => {
             console.error('Error loading subjects:', error);
             container.innerHTML = '<div class="text-center py-8 text-red-400 col-span-2">Error loading subjects. Please refresh.</div>';
-            document.getElementById('subjectsSection').style.display = 'block';
-            hideLoading();
         });
 }
 
@@ -873,7 +804,6 @@ function displayAnswer(data) {
     
     answerSection.classList.remove('hidden');
     answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    hideLoading();
 }
 
 function validateAndGetAnswer(pinInputElement) {
@@ -895,19 +825,18 @@ function validateAndGetAnswer(pinInputElement) {
     const subjectsSection = document.getElementById('subjectsSection');
     const errorBox = document.getElementById('pinErrorBox');
 
-    if (subjectsSection) subjectsSection.style.display = 'none';
+    // Hide error box if showing
     if (errorBox) errorBox.classList.add('hidden');
-    clearErrorState();
 
     if (answerCache.has(pinCode)) {
+        // Hide subjects, show answer
+        subjectsSection.style.display = 'none';
         displayAnswer(answerCache.get(pinCode));
         currentAnswerPin = pinCode;
         return;
     }
 
-    answerSection.classList.remove('hidden');
-    
-    showLoading();
+    // NO loading spinner/text anywhere - page stays exactly as is
     isLoading = true;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -921,32 +850,27 @@ function validateAndGetAnswer(pinInputElement) {
     .then(response => { clearTimeout(timeoutId); return response.json(); })
     .then(data => {
         isLoading = false;
-        hideLoading();
         if (data.success) {
+            // PIN correct - hide subjects, show answer
+            subjectsSection.style.display = 'none';
             data.pin_code = pinCode;
             answerCache.set(pinCode, data);
             try { sessionStorage.setItem(`answer_${pinCode}`, JSON.stringify(data)); sessionStorage.setItem('current_viewing_pin', pinCode); } catch(e) {}
             currentAnswerPin = pinCode;
             displayAnswer(data);
         } else {
-            answerSection.classList.add('hidden');
+            // PIN incorrect - show error box, keep subjects visible
             errorBox.classList.remove('hidden');
             errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
             pinInputElement.value = '';
             currentAnswerPin = null;
             sessionStorage.removeItem('current_viewing_pin');
-            subjectsSection.style.display = 'none';
-            saveErrorState(); // Save that error box is showing
         }
     })
     .catch(error => {
         isLoading = false;
-        hideLoading();
         console.error('Error:', error);
         alert('Network error. Please try again.');
-        answerSection.classList.add('hidden');
-        subjectsSection.style.display = 'none';
-        saveErrorState();
     });
 }
 
@@ -959,7 +883,6 @@ function goBackToHomepage() {
     if (subjectsSection) subjectsSection.style.display = 'block';
     currentAnswerPin = null;
     sessionStorage.removeItem('current_viewing_pin');
-    clearErrorState();
 }
 
 function restoreCachedAnswer() {
@@ -998,31 +921,8 @@ if (heroEnterPinBtn && headerPin) { heroEnterPinBtn.addEventListener('click', ()
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    const subjectsSection = document.getElementById('subjectsSection');
-    const answerSection = document.getElementById('answerSection');
-    const errorBox = document.getElementById('pinErrorBox');
-    
-    // Start with everything hidden
-    if (subjectsSection) subjectsSection.style.display = 'none';
-    if (answerSection) answerSection.classList.add('hidden');
-    if (errorBox) errorBox.classList.add('hidden');
-    
-    showLoading();
     loadSubjectsFromDB();
     restoreCachedAnswer();
-    checkSavedState();
-});
-
-// Save state before page refresh
-window.addEventListener('beforeunload', function() {
-    const errorBox = document.getElementById('pinErrorBox');
-    if (errorBox && !errorBox.classList.contains('hidden')) {
-        sessionStorage.setItem('showErrorBox', 'true');
-    }
-    const subjectsSection = document.getElementById('subjectsSection');
-    if (subjectsSection && subjectsSection.style.display === 'none') {
-        sessionStorage.setItem('subjectsHidden', 'true');
-    }
 });
 </script>
 {% endblock %}
