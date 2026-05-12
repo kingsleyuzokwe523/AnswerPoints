@@ -541,6 +541,7 @@
         </div>
     </div>
 
+    <!-- Answer section - initially hidden -->
     <div id="answerSection" class="hidden mb-4">
         <div class="answer-outer-container">
             <div class="text-center pt-4 pb-2">
@@ -809,7 +810,7 @@ function displayAnswer(data) {
 }
 
 function validateAndGetAnswer(pinInputElement) {
-    // If already loading, don't do anything
+    // If already loading, don't do anything - page stays still
     if (isLoading) {
         return;
     }
@@ -828,19 +829,19 @@ function validateAndGetAnswer(pinInputElement) {
     const pinCode = value;
     const subjectsSection = document.getElementById('subjectsSection');
     const errorBox = document.getElementById('pinErrorBox');
+    const answerSection = document.getElementById('answerSection');
 
-    // Hide subjects and error box immediately
-    if (subjectsSection) subjectsSection.style.display = 'none';
-    if (errorBox) errorBox.classList.add('hidden');
-
-    // Check cache
+    // Check cache first - if cached, show immediately
     if (answerCache.has(pinCode)) {
+        // Hide subjects and error, show answer
+        if (subjectsSection) subjectsSection.style.display = 'none';
+        if (errorBox) errorBox.classList.add('hidden');
         displayAnswer(answerCache.get(pinCode));
         currentAnswerPin = pinCode;
         return;
     }
 
-    // Set loading flag - page remains constant/stable
+    // Set loading flag - page remains COMPLETELY STILL/UNCHANGED
     isLoading = true;
     
     const controller = new AbortController();
@@ -866,7 +867,10 @@ function validateAndGetAnswer(pinInputElement) {
                 sessionStorage.setItem('current_viewing_pin', pinCode); 
             } catch(e) {}
             currentAnswerPin = pinCode;
-            // ONLY show answer after loading is complete
+            
+            // NOW make changes ONCE - hide subjects, show answer
+            if (subjectsSection) subjectsSection.style.display = 'none';
+            if (errorBox) errorBox.classList.add('hidden');
             displayAnswer(data);
         } else {
             // Show error box, show subjects back
@@ -875,6 +879,7 @@ function validateAndGetAnswer(pinInputElement) {
                 errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
             }
             if (subjectsSection) subjectsSection.style.display = 'block';
+            if (answerSection) answerSection.classList.add('hidden');
             pinInputElement.value = '';
             currentAnswerPin = null;
             sessionStorage.removeItem('current_viewing_pin');
@@ -884,7 +889,6 @@ function validateAndGetAnswer(pinInputElement) {
         isLoading = false;
         console.error('Error:', error);
         alert('Network error. Please try again.');
-        if (subjectsSection) subjectsSection.style.display = 'block';
         pinInputElement.value = '';
     });
 }
