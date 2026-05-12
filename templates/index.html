@@ -808,12 +808,41 @@ function displayAnswer(data) {
     answerSection.classList.remove('hidden');
     answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+function resetToHomepage() {
+    currentAnswerPin = null;
+    isLoading = false;
+    
+    const answerSection = document.getElementById('answerSection');
+    if (answerSection) {
+        answerSection.classList.add('hidden');
+        document.getElementById('answerContent').innerHTML = '';
+        document.getElementById('answerSubjectName').innerHTML = '-';
+        document.getElementById('answerPostedBy').innerHTML = '-';
+        document.getElementById('answerPinValue').innerHTML = '-';
+    }
+    
+    // ONLY show subjects section when returning to homepage
+    const subjectsSection = document.getElementById('subjectsSection');
+    if (subjectsSection) subjectsSection.style.display = 'block';
+    
+    const errorBox = document.getElementById('pinErrorBox');
+    if (errorBox) errorBox.classList.add('hidden');
+    
+    const headerPin = document.getElementById('pinInputHeader');
+    if (headerPin) headerPin.value = '';
+    
+    const footerPin = document.getElementById('pinInputFooter');
+    if (footerPin) footerPin.value = '';
+    
+    const errorPinInput = document.getElementById('pinInputError');
+    if (errorPinInput) errorPinInput.value = '';
+    
+    sessionStorage.removeItem('current_viewing_pin');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
 function validateAndGetAnswer(pinInputElement) {
-    // If already loading, don't do anything - page stays still
-    if (isLoading) {
-        return;
-    }
+    if (isLoading) return;
     
     let value = pinInputElement.value.trim();
     value = value.replace(/[^0-9]/g, '');
@@ -831,17 +860,18 @@ function validateAndGetAnswer(pinInputElement) {
     const errorBox = document.getElementById('pinErrorBox');
     const answerSection = document.getElementById('answerSection');
 
-    // Check cache first - if cached, show immediately
+    // HIDE subjects section immediately when checking PIN
+    if (subjectsSection) subjectsSection.style.display = 'none';
+    
+    // HIDE error box if visible
+    if (errorBox) errorBox.classList.add('hidden');
+
     if (answerCache.has(pinCode)) {
-        // Hide subjects and error, show answer
-        if (subjectsSection) subjectsSection.style.display = 'none';
-        if (errorBox) errorBox.classList.add('hidden');
         displayAnswer(answerCache.get(pinCode));
         currentAnswerPin = pinCode;
         return;
     }
 
-    // Set loading flag - page remains COMPLETELY STILL/UNCHANGED
     isLoading = true;
     
     const controller = new AbortController();
@@ -868,17 +898,15 @@ function validateAndGetAnswer(pinInputElement) {
             } catch(e) {}
             currentAnswerPin = pinCode;
             
-            // NOW make changes ONCE - hide subjects, show answer
-            if (subjectsSection) subjectsSection.style.display = 'none';
-            if (errorBox) errorBox.classList.add('hidden');
+            // Subjects already hidden - just show answer
             displayAnswer(data);
         } else {
-            // Show error box, show subjects back
+            // Show error box, keep subjects HIDDEN
             if (errorBox) { 
                 errorBox.classList.remove('hidden'); 
                 errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
             }
-            if (subjectsSection) subjectsSection.style.display = 'block';
+            // Subjects section remains HIDDEN (do NOT show it)
             if (answerSection) answerSection.classList.add('hidden');
             pinInputElement.value = '';
             currentAnswerPin = null;
@@ -897,14 +925,17 @@ function goBackToHomepage() {
     const errorBox = document.getElementById('pinErrorBox');
     const subjectsSection = document.getElementById('subjectsSection');
     const answerSection = document.getElementById('answerSection');
+    
     if (errorBox) errorBox.classList.add('hidden');
     if (answerSection) answerSection.classList.add('hidden');
+    
+    // ONLY show subjects section when going back to homepage
     if (subjectsSection) subjectsSection.style.display = 'block';
+    
     currentAnswerPin = null;
     isLoading = false;
     sessionStorage.removeItem('current_viewing_pin');
 }
-
 function restoreCachedAnswer() {
     const savedPin = sessionStorage.getItem('current_viewing_pin');
     if (savedPin) {
