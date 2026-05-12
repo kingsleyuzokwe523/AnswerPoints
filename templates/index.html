@@ -187,6 +187,7 @@
         border-radius: 20px;
         overflow: hidden;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        width: 100%;
     }
     
     .main-inner-box {
@@ -380,13 +381,12 @@
         gap: 12px;
     }
     
-    /* Social buttons - REDUCED box padding, icons stay large */
     .social-btn {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 15px;
-        padding: 10px 12px;  /* was 16px 12px, reduced */
+        padding: 10px 12px;
         border-radius: 12px;
         transition: all 0.3s;
         text-decoration: none;
@@ -395,7 +395,7 @@
     }
     
     .social-btn i {
-        font-size: 38px;  /* stays large */
+        font-size: 38px;
     }
     
     .whatsapp-btn {
@@ -404,28 +404,16 @@
         border: 1px solid #20b859;
     }
     
-    .whatsapp-btn:hover {
-        background: #20b859;
-    }
-    
     .telegram-btn {
         background: #0088cc;
         color: white;
         border: 1px solid #0077b3;
     }
     
-    .telegram-btn:hover {
-        background: #0077b3;
-    }
-    
     .facebook-btn {
         background: #1877f2;
         color: white;
         border: 1px solid #166fe5;
-    }
-    
-    .facebook-btn:hover {
-        background: #166fe5;
     }
     
     .vip-banner {
@@ -452,7 +440,6 @@
         color: #fecaca;
     }
     
-    /* AnswerPoint text - increased by 6px */
     .hero-title {
         font-size: 32px;
         font-weight: 800;
@@ -466,22 +453,12 @@
         font-size: 14px;
     }
     
+    /* ========== MOBILE VIEW FIXES - SUBJECTS FIT TO SCREEN ========== */
     @media (max-width: 640px) {
-        .hero-title {
-            font-size: 26px;
-        }
-        
-        .hero-subtitle {
-            font-size: 13px;
-        }
-        
-        .marquee-text {
-            font-size: 11px;
-        }
-        
         .answer-subject {
             font-size: calc(1.25rem - 2px);
             font-weight: 800;
+            word-break: break-word;
         }
         
         .hero-buttons {
@@ -490,46 +467,70 @@
         
         .hero-buttons a, 
         .hero-buttons button {
-            padding: 8px 12px;
-            font-size: 13px;
+            padding: 8px 8px;
+            font-size: 11px;
             font-weight: 700;
+            white-space: nowrap;
         }
         
         .subjects-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px 16px;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 10px;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .subjects-column {
+            gap: 4px;
+        }
+        
+        .subject-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 0;
+            flex-wrap: wrap;
         }
         
         .subject-number {
-            font-size: 14px;
+            font-size: 10px;
             font-weight: bold;
-            min-width: 24px;
+            min-width: 20px;
         }
         
         .subject-name {
-            font-size: 14px;
+            font-size: 10px;
             font-weight: 600;
+            flex: 1;
+            word-break: break-word;
+            line-height: 1.3;
         }
         
         .subject-icon {
-            font-size: 13px;
-            width: 14px;
+            font-size: 9px;
+            width: 12px;
         }
         
         .practical-badge {
-            font-size: 11px;
-            font-weight: bold;
-            padding: 2px 5px;
+            font-size: 7px;
+            padding: 1px 3px;
+            white-space: nowrap;
         }
         
-        .subjects-header h2 {
-            font-size: 16px;
-            font-weight: 800;
+        .main-outer-container {
+            overflow-x: hidden;
         }
         
         .main-inner-box {
-            padding: 14px;
-            margin: 12px;
+            padding: 12px;
+            margin: 10px;
+        }
+        
+        .subjects-header h2 {
+            font-size: 13px;
+            word-break: break-word;
         }
         
         .info-item {
@@ -545,24 +546,24 @@
         }
         
         .info-card-inner {
-            padding: 12px 14px;
+            padding: 10px 12px;
         }
         
         .info-icon {
-            width: 28px;
-            height: 28px;
-            font-size: 13px;
+            width: 24px;
+            height: 24px;
+            font-size: 11px;
         }
         
         .info-label {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 700;
         }
         
         .info-value {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
-            padding: 3px 10px;
+            padding: 2px 8px;
         }
         
         .sticky-top .flex {
@@ -570,49 +571,50 @@
         }
         
         .sticky-top input {
-            font-size: 13px;
-            font-weight: 500;
-            padding: 7px 8px;
+            font-size: 11px;
+            padding: 6px 6px;
         }
         
         .sticky-top button,
         .sticky-top a {
-            padding: 7px 10px;
-            font-size: 12px;
+            padding: 6px 8px;
+            font-size: 10px;
             font-weight: 700;
         }
         
         .hotupdates-inner-box,
         .timetable-inner-box {
-            padding: 10px 12px;
+            padding: 8px 10px;
         }
         
         .hotupdates-header i {
-            font-size: 16px;
+            font-size: 14px;
         }
         
         .hotupdates-header span {
-            font-size: 14px;
+            font-size: 12px;
         }
         
         .timetable-link {
-            font-size: 14px;
+            font-size: 11px;
+            word-break: break-word;
         }
         
         .need-help-section {
-            padding: 14px;
+            padding: 12px;
         }
         
         .need-help-title {
-            font-size: 15px;
+            font-size: 13px;
         }
         
         .need-help-email {
-            font-size: 14px;
+            font-size: 12px;
+            word-break: break-word;
         }
         
         .need-help-powered {
-            font-size: 12px;
+            font-size: 10px;
         }
         
         .sticky-bottom .flex {
@@ -620,65 +622,97 @@
         }
         
         .sticky-bottom input {
-            font-size: 13px;
-            font-weight: 500;
-            padding: 7px 8px;
+            font-size: 11px;
+            padding: 6px 6px;
         }
         
         .sticky-bottom button,
         .sticky-bottom a {
-            padding: 7px 10px;
-            font-size: 12px;
-            font-weight: 700;
+            padding: 6px 8px;
+            font-size: 10px;
         }
         
-        /* Social buttons mobile - reduced padding, icons stay large */
         .social-btn {
-            padding: 8px 10px;  /* was 14px 10px, reduced */
-            font-size: 18px;
+            padding: 8px 10px;
+            font-size: 14px;
         }
         
         .social-btn i {
-            font-size: 34px;  /* stays large */
+            font-size: 22px;
         }
         
         .vip-banner p {
-            font-size: 15px;
+            font-size: 13px;
         }
         
         .vip-banner small {
+            font-size: 10px;
+        }
+        
+        .hero-title {
+            font-size: 18px;
+        }
+        
+        .hero-subtitle {
+            font-size: 11px;
+        }
+        
+        .marquee-text {
+            font-size: 9px;
+        }
+        
+        .answer-outer-container {
+            overflow-x: hidden;
+        }
+        
+        .answer-inner-box {
+            padding: 12px;
+            margin: 10px;
+        }
+        
+        .answer-text {
             font-size: 12px;
+            word-break: break-word;
+        }
+        
+        .answer-text img {
+            max-width: 100%;
+            height: auto;
         }
     }
     
     @media (max-width: 480px) {
         .subjects-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px 12px;
+            gap: 6px 8px;
         }
         
         .subject-number {
-            font-size: 13px;
-            min-width: 22px;
+            font-size: 9px;
+            min-width: 18px;
         }
         
         .subject-name {
-            font-size: 13px;
+            font-size: 9px;
         }
         
         .hero-buttons a, 
         .hero-buttons button {
+            font-size: 9px;
+            padding: 5px 4px;
+        }
+        
+        .social-btn {
             font-size: 12px;
             padding: 6px 8px;
         }
         
-        .social-btn {
-            font-size: 16px;
-            padding: 6px 8px;  /* was 12px 8px, reduced */
+        .social-btn i {
+            font-size: 20px;
         }
         
-        .social-btn i {
-            font-size: 30px;  /* stays large */
+        .practical-badge {
+            font-size: 6px;
+            padding: 1px 2px;
         }
     }
 </style>
