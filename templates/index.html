@@ -351,7 +351,76 @@
         gap: 6px;
     }
     
-    /* Mobile View - Keep 2 columns, NO CUTTING */
+    /* Social Channels */
+    .social-channels {
+        margin-bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 12px;
+        transition: all 0.3s;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    .social-btn i {
+        font-size: 20px;
+    }
+    
+    .whatsapp-btn {
+        background: #25D366;
+        color: white;
+        border: 1px solid #20b859;
+    }
+    
+    .whatsapp-btn:hover {
+        background: #20b859;
+    }
+    
+    .telegram-btn {
+        background: #0088cc;
+        color: white;
+        border: 1px solid #0077b3;
+    }
+    
+    .telegram-btn:hover {
+        background: #0077b3;
+    }
+    
+    /* VIP Banner */
+    .vip-banner {
+        background: #dc2626;
+        padding: 12px;
+        margin-bottom: 16px;
+        text-align: center;
+        border-radius: 12px;
+        border: 1px solid #b91c1c;
+    }
+    
+    .vip-banner p {
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .vip-banner small {
+        display: block;
+        margin-top: 4px;
+        font-size: 11px;
+        color: #fecaca;
+    }
+    
+    /* Mobile View */
     @media (max-width: 640px) {
         .answer-subject {
             font-size: calc(1.25rem - 4px);
@@ -367,7 +436,6 @@
             font-size: 10px;
         }
         
-        /* Keep exactly 2 columns on mobile - NO CUTTING */
         .subjects-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: 6px 12px;
@@ -470,6 +538,19 @@
             padding: 6px 8px;
             font-size: 10px;
         }
+        
+        .social-btn {
+            padding: 10px;
+            font-size: 12px;
+        }
+        
+        .social-btn i {
+            font-size: 18px;
+        }
+        
+        .vip-banner p {
+            font-size: 12px;
+        }
     }
     
     @media (max-width: 480px) {
@@ -491,6 +572,11 @@
         .hero-buttons button {
             font-size: 9px;
             padding: 5px 6px;
+        }
+        
+        .social-btn {
+            padding: 8px;
+            font-size: 11px;
         }
     }
 </style>
@@ -545,10 +631,22 @@
         </div>
     </div>
 
+    <!-- Social Channels - WhatsApp & Telegram -->
+    <div class="social-channels">
+        <a href="{{ whatsapp_link }}" target="_blank" class="social-btn whatsapp-btn">
+            <i class="fab fa-whatsapp"></i>
+            <span>Join Our WhatsApp Channel</span>
+        </a>
+        <a href="{{ telegram_link }}" target="_blank" class="social-btn telegram-btn">
+            <i class="fab fa-telegram-plane"></i>
+            <span>Join Our Telegram Channel</span>
+        </a>
+    </div>
+
     <!-- VIP Banner -->
-    <div class="bg-red-600 p-3 mb-4 text-center shadow border border-red-500 rounded-lg">
-        <p class="text-white font-semibold text-sm">Want early VIP answers before the exam?</p>
-        <p class="text-white mt-1 text-xs"><i class="fab fa-whatsapp mr-1"></i> Message <strong>{{ vip_number }}</strong> on WhatsApp</p>
+    <div class="vip-banner">
+        <p>Want early VIP answers before the exam?</p>
+        <small><i class="fab fa-whatsapp"></i> Message {{ vip_number }} on WhatsApp</small>
     </div>
 
     <!-- ERROR MESSAGE BOX -->
