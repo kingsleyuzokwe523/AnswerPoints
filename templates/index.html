@@ -257,7 +257,6 @@
         line-height: 1.4;
     }
     
-    /* HOT UPDATES - increased by 4px */
     .hotupdates-inner-box {
         background: #fef2f2;
         border: 1px solid #fecaca;
@@ -312,7 +311,6 @@
         text-decoration: underline;
     }
     
-    /* Need Help section - increased by 4px */
     .need-help-section {
         background: #1f2937;
         border-radius: 12px;
@@ -382,7 +380,6 @@
         gap: 12px;
     }
     
-    /* Social buttons - text increased by 3px, icons increased by 3px */
     .social-btn {
         display: flex;
         align-items: center;
@@ -430,7 +427,6 @@
         background: #166fe5;
     }
     
-    /* VIP Banner - text increased by 3px */
     .vip-banner {
         background: #dc2626;
         padding: 12px;
@@ -455,9 +451,9 @@
         color: #fecaca;
     }
     
-    /* AnswerPoint text - increased by 4px */
+    /* AnswerPoint text - increased by 6px (from 26px to 32px) */
     .hero-title {
-        font-size: 26px;
+        font-size: 32px;
         font-weight: 800;
     }
     
@@ -469,9 +465,16 @@
         font-size: 14px;
     }
     
+    /* Loading spinner container - hidden until needed */
+    #loadingSpinner {
+        display: none;
+        text-align: center;
+        padding: 20px;
+    }
+    
     @media (max-width: 640px) {
         .hero-title {
-            font-size: 22px;
+            font-size: 26px;
         }
         
         .hero-subtitle {
@@ -848,8 +851,8 @@
         </div>
     </div>
 
-    <!-- SUBJECTS SECTION - Starts HIDDEN to prevent cutting -->
-    <div id="subjectsSection" style="display: none;">
+    <!-- SUBJECTS SECTION - Starts FULLY HIDDEN to prevent any cutting -->
+    <div id="subjectsSection" style="display: none; visibility: hidden;">
         <div class="main-outer-container">
             <div class="main-inner-box">
                 <div class="subjects-header">
@@ -968,13 +971,19 @@ function restoreState() {
     const subjectsSection = document.getElementById('subjectsSection');
     const answerSection = document.getElementById('answerSection');
     
-    if (subjectsSection) subjectsSection.style.display = 'none';
+    if (subjectsSection) {
+        subjectsSection.style.display = 'none';
+        subjectsSection.style.visibility = 'hidden';
+    }
     if (errorBox) errorBox.classList.add('hidden');
     if (answerSection) answerSection.classList.add('hidden');
     
     if (showErrorBox === 'true') {
         if (errorBox) errorBox.classList.remove('hidden');
-        if (subjectsSection) subjectsSection.style.display = 'none';
+        if (subjectsSection) {
+            subjectsSection.style.display = 'none';
+            subjectsSection.style.visibility = 'hidden';
+        }
     } else if (showAnswer === 'true') {
         const savedAnswerContent = sessionStorage.getItem('savedAnswerContent');
         const savedAnswerSubject = sessionStorage.getItem('savedAnswerSubject');
@@ -987,10 +996,16 @@ function restoreState() {
             document.getElementById('answerPostedBy').innerHTML = savedAnswerPostedBy || 'AnswerPoint Team';
             document.getElementById('answerPinValue').innerHTML = savedAnswerPinValue || '000';
             if (answerSection) answerSection.classList.remove('hidden');
-            if (subjectsSection) subjectsSection.style.display = 'none';
+            if (subjectsSection) {
+                subjectsSection.style.display = 'none';
+                subjectsSection.style.visibility = 'hidden';
+            }
         }
     } else if (showSubjects === 'true') {
-        if (subjectsSection) subjectsSection.style.display = 'block';
+        if (subjectsSection) {
+            subjectsSection.style.display = 'block';
+            subjectsSection.style.visibility = 'visible';
+        }
     }
 }
 
@@ -1008,7 +1023,10 @@ function resetToHomepage() {
     }
     
     const subjectsSection = document.getElementById('subjectsSection');
-    if (subjectsSection) subjectsSection.style.display = 'block';
+    if (subjectsSection) {
+        subjectsSection.style.display = 'block';
+        subjectsSection.style.visibility = 'visible';
+    }
     
     const errorBox = document.getElementById('pinErrorBox');
     if (errorBox) errorBox.classList.add('hidden');
@@ -1032,8 +1050,9 @@ function loadSubjectsFromDB() {
     const container = document.getElementById('dynamicSubjectsList');
     const subjectsSection = document.getElementById('subjectsSection');
     
-    // CRITICAL: Start HIDDEN to prevent any cutting/partial display
+    // CRITICAL: Keep COMPLETELY HIDDEN until data is fully loaded - NO CUTTING
     subjectsSection.style.display = 'none';
+    subjectsSection.style.visibility = 'hidden';
     
     fetch('/get_subjects_api')
         .then(res => res.json())
@@ -1070,12 +1089,13 @@ function loadSubjectsFromDB() {
                 container.innerHTML = '<div class="text-center py-8 text-gray-400 col-span-2">No subjects available.</div>';
             }
             
-            // ONLY show subjects AFTER fully loaded - NO CUTTING
+            // ONLY show subjects AFTER data is FULLY loaded - NO CUTTING at all
             const showErrorBox = sessionStorage.getItem('showErrorBox');
             const showAnswer = sessionStorage.getItem('showAnswer');
             
             if (!showErrorBox && !showAnswer) {
                 subjectsSection.style.display = 'block';
+                subjectsSection.style.visibility = 'visible';
                 sessionStorage.setItem('showSubjects', 'true');
             }
         })
@@ -1086,6 +1106,7 @@ function loadSubjectsFromDB() {
             const showAnswer = sessionStorage.getItem('showAnswer');
             if (!showErrorBox && !showAnswer) {
                 subjectsSection.style.display = 'block';
+                subjectsSection.style.visibility = 'visible';
             }
         });
 }
@@ -1101,7 +1122,10 @@ function showTimetable() {
     const answerSection = document.getElementById('answerSection');
     const subjectsSection = document.getElementById('subjectsSection');
     const answerContent = document.getElementById('answerContent');
-    if (subjectsSection) subjectsSection.style.display = 'none';
+    if (subjectsSection) {
+        subjectsSection.style.display = 'none';
+        subjectsSection.style.visibility = 'hidden';
+    }
     fetch('/get_timetable_html').then(res => res.text()).then(html => {
         answerContent.innerHTML = html;
         preloadImages(html);
@@ -1151,6 +1175,7 @@ function displayAnswer(data) {
     preloadImages(answerHtml);
     
     subjectsSection.style.display = 'none';
+    subjectsSection.style.visibility = 'hidden';
     errorBox.classList.add('hidden');
     answerSection.classList.remove('hidden');
     answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1185,6 +1210,7 @@ function validateAndGetAnswer(pinInputElement) {
 
     if (answerCache.has(pinCode)) {
         subjectsSection.style.display = 'none';
+        subjectsSection.style.visibility = 'hidden';
         errorBox.classList.add('hidden');
         displayAnswer(answerCache.get(pinCode));
         currentAnswerPin = pinCode;
@@ -1203,6 +1229,7 @@ function validateAndGetAnswer(pinInputElement) {
         isLoading = false;
         if (data.success) {
             subjectsSection.style.display = 'none';
+            subjectsSection.style.visibility = 'hidden';
             errorBox.classList.add('hidden');
             data.pin_code = pinCode;
             answerCache.set(pinCode, data);
@@ -1210,6 +1237,7 @@ function validateAndGetAnswer(pinInputElement) {
             displayAnswer(data);
         } else {
             subjectsSection.style.display = 'none';
+            subjectsSection.style.visibility = 'hidden';
             answerSection.classList.add('hidden');
             errorBox.classList.remove('hidden');
             errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1235,6 +1263,7 @@ function goBackToHomepage() {
     errorBox.classList.add('hidden');
     answerSection.classList.add('hidden');
     subjectsSection.style.display = 'block';
+    subjectsSection.style.visibility = 'visible';
     currentAnswerPin = null;
     
     sessionStorage.clear();
