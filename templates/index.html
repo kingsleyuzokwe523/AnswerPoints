@@ -45,12 +45,6 @@
         -moz-appearance: textfield;
     }
     
-    @keyframes loadingMove {
-        0% { width: 10%; margin-left: 0%; }
-        50% { width: 40%; margin-left: 30%; }
-        100% { width: 10%; margin-left: 80%; }
-    }
-    
     .sticky-top {
         position: sticky;
         top: 0;
@@ -195,6 +189,7 @@
         margin: 0;
     }
     
+    /* Subjects Grid - 2 columns on all devices */
     .subjects-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -227,6 +222,7 @@
         color: #374151;
         font-size: 11px;
         flex: 1;
+        word-break: break-word;
     }
     
     .hotupdates-inner-box {
@@ -341,6 +337,7 @@
         gap: 6px;
     }
     
+    /* Mobile View - Keep 2 columns */
     @media (max-width: 640px) {
         .answer-subject {
             font-size: calc(1.25rem - 4px);
@@ -354,6 +351,40 @@
         .hero-buttons button {
             padding: 6px 10px;
             font-size: 10px;
+        }
+        
+        /* Keep 2 columns on mobile */
+        .subjects-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 16px;
+        }
+        
+        .subject-number {
+            font-size: 9px;
+            width: 20px;
+        }
+        
+        .subject-name {
+            font-size: 9px;
+        }
+        
+        .subject-icon {
+            font-size: 9px;
+            width: 12px;
+        }
+        
+        .practical-badge {
+            font-size: 7px;
+            padding: 1px 3px;
+        }
+        
+        .subjects-header h2 {
+            font-size: 12px;
+        }
+        
+        .main-inner-box {
+            padding: 12px;
+            margin: 10px;
         }
         
         .info-item {
@@ -385,30 +416,6 @@
         .info-value {
             font-size: 10px;
             padding: 2px 8px;
-        }
-        
-        .subjects-grid {
-            grid-template-columns: 1fr;
-            gap: 6px;
-        }
-        
-        .subject-number {
-            font-size: 10px;
-            width: 22px;
-        }
-        
-        .subject-name {
-            font-size: 10px;
-        }
-        
-        .subject-icon {
-            font-size: 10px;
-            width: 14px;
-        }
-        
-        .main-inner-box {
-            padding: 12px;
-            margin: 10px;
         }
         
         .sticky-top .flex {
@@ -448,6 +455,29 @@
         .sticky-bottom a {
             padding: 6px 8px;
             font-size: 10px;
+        }
+    }
+    
+    /* Extra small devices - still 2 columns */
+    @media (max-width: 480px) {
+        .subjects-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 12px;
+        }
+        
+        .subject-number {
+            font-size: 8px;
+            width: 18px;
+        }
+        
+        .subject-name {
+            font-size: 8px;
+        }
+        
+        .hero-buttons a, 
+        .hero-buttons button {
+            font-size: 9px;
+            padding: 5px 8px;
         }
     }
 </style>
@@ -551,7 +581,7 @@
     <div id="answerSection" class="hidden mb-4">
         <div class="answer-outer-container">
             <div class="text-center pt-4 pb-2">
-                <button onclick="window.location.reload()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition flex items-center gap-2 mx-auto shadow-md">
+                <button onclick="refreshPageAndReset()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition flex items-center gap-2 mx-auto shadow-md">
                     <i class="fas fa-sync-alt"></i> Refresh Page
                 </button>
             </div>
@@ -673,7 +703,14 @@ function preloadImages(html) {
     });
 }
 
-// Save current state (error box or subjects) to sessionStorage
+// Refresh page and reset to clean state (no partial display)
+function refreshPageAndReset() {
+    // Clear all session storage to ensure clean reload
+    sessionStorage.clear();
+    window.location.reload();
+}
+
+// Save current state to sessionStorage
 function saveCurrentState() {
     const errorBox = document.getElementById('pinErrorBox');
     const subjectsSection = document.getElementById('subjectsSection');
@@ -704,12 +741,16 @@ function restoreState() {
     const subjectsSection = document.getElementById('subjectsSection');
     const answerSection = document.getElementById('answerSection');
     
+    // Clear any existing display states first
+    if (subjectsSection) subjectsSection.style.display = 'none';
+    if (errorBox) errorBox.classList.add('hidden');
+    if (answerSection) answerSection.classList.add('hidden');
+    
     if (showErrorBox === 'true') {
         if (errorBox) errorBox.classList.remove('hidden');
         if (subjectsSection) subjectsSection.style.display = 'none';
         if (answerSection) answerSection.classList.add('hidden');
     } else if (showAnswer === 'true') {
-        // Restore cached answer if available
         const savedPin = sessionStorage.getItem('current_viewing_pin');
         if (savedPin) {
             const cached = sessionStorage.getItem(`answer_${savedPin}`);
@@ -771,7 +812,7 @@ function loadSubjectsFromDB() {
     const container = document.getElementById('dynamicSubjectsList');
     const subjectsSection = document.getElementById('subjectsSection');
     
-    // Keep subjects hidden until fully loaded
+    // Keep subjects hidden until fully loaded to prevent partial/cutting display
     subjectsSection.style.display = 'none';
     
     fetch('/get_subjects_api')
@@ -809,7 +850,8 @@ function loadSubjectsFromDB() {
                 container.innerHTML = '<div class="text-center py-8 text-gray-400 col-span-2">No subjects available.</div>';
             }
             
-            // Only show subjects if no error box should be shown
+            // Only show subjects after FULLY loaded (no cutting/partial display)
+            // Check if we need to show error box instead
             const showErrorBox = sessionStorage.getItem('showErrorBox');
             if (!showErrorBox || showErrorBox !== 'true') {
                 subjectsSection.style.display = 'block';
@@ -892,6 +934,7 @@ function displayAnswer(data) {
     sessionStorage.setItem('showAnswer', 'true');
     sessionStorage.removeItem('showSubjects');
     sessionStorage.removeItem('showErrorBox');
+    if (pinCode) sessionStorage.setItem('current_viewing_pin', pinCode);
 }
 
 function validateAndGetAnswer(pinInputElement) {
@@ -1001,7 +1044,7 @@ if (footerViewBtn && footerPin) { footerPin.addEventListener('input', restrictTo
 const heroEnterPinBtn = document.getElementById('heroEnterPinBtn');
 if (heroEnterPinBtn && headerPin) { heroEnterPinBtn.addEventListener('click', () => { headerPin.focus(); headerPin.scrollIntoView({ behavior: 'smooth', block: 'center' }); }); }
 
-// Initialize - subjects hidden until fully loaded
+// Initialize - subjects hidden until fully loaded (prevents partial/cutting display)
 document.addEventListener('DOMContentLoaded', function() {
     const subjectsSection = document.getElementById('subjectsSection');
     subjectsSection.style.display = 'none';
@@ -1013,5 +1056,12 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('beforeunload', function() {
     saveCurrentState();
 });
+
+// Override refresh button to clear state and prevent partial display
+const refreshButton = document.querySelector('button[onclick*="window.location.reload()"]');
+if (refreshButton) {
+    refreshButton.removeAttribute('onclick');
+    refreshButton.addEventListener('click', refreshPageAndReset);
+}
 </script>
 {% endblock %}
