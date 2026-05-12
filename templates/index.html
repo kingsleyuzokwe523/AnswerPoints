@@ -189,7 +189,6 @@
         margin: 0;
     }
     
-    /* Subjects Grid - Fixed 2 columns, NO CUTTING */
     .subjects-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -351,7 +350,6 @@
         gap: 6px;
     }
     
-    /* Social Channels */
     .social-channels {
         margin-bottom: 16px;
         display: flex;
@@ -396,7 +394,6 @@
         background: #0077b3;
     }
     
-    /* VIP Banner */
     .vip-banner {
         background: #dc2626;
         padding: 12px;
@@ -420,7 +417,6 @@
         color: #fecaca;
     }
     
-    /* Mobile View */
     @media (max-width: 640px) {
         .answer-subject {
             font-size: calc(1.25rem - 4px);
@@ -573,11 +569,6 @@
             font-size: 9px;
             padding: 5px 6px;
         }
-        
-        .social-btn {
-            padding: 8px;
-            font-size: 11px;
-        }
     }
 </style>
 
@@ -631,7 +622,7 @@
         </div>
     </div>
 
-    <!-- Social Channels - WhatsApp & Telegram -->
+    <!-- Social Channels -->
     <div class="social-channels">
         <a href="{{ whatsapp_link }}" target="_blank" class="social-btn whatsapp-btn">
             <i class="fab fa-whatsapp"></i>
@@ -802,6 +793,82 @@ function preloadImages(html) {
     });
 }
 
+// Save current state to sessionStorage
+function saveCurrentState() {
+    const errorBox = document.getElementById('pinErrorBox');
+    const answerSection = document.getElementById('answerSection');
+    const subjectsSection = document.getElementById('subjectsSection');
+    
+    if (errorBox && !errorBox.classList.contains('hidden')) {
+        sessionStorage.setItem('showErrorBox', 'true');
+        sessionStorage.removeItem('showAnswer');
+        sessionStorage.removeItem('showSubjects');
+    } else if (answerSection && !answerSection.classList.contains('hidden')) {
+        sessionStorage.setItem('showAnswer', 'true');
+        // Save the answer data
+        const currentAnswer = document.getElementById('answerContent').innerHTML;
+        const currentSubject = document.getElementById('answerSubjectName').innerHTML;
+        const currentPostedBy = document.getElementById('answerPostedBy').innerHTML;
+        const currentPinValue = document.getElementById('answerPinValue').innerHTML;
+        if (currentAnswer) {
+            sessionStorage.setItem('savedAnswerContent', currentAnswer);
+            sessionStorage.setItem('savedAnswerSubject', currentSubject);
+            sessionStorage.setItem('savedAnswerPostedBy', currentPostedBy);
+            sessionStorage.setItem('savedAnswerPinValue', currentPinValue);
+        }
+        sessionStorage.removeItem('showErrorBox');
+        sessionStorage.removeItem('showSubjects');
+    } else if (subjectsSection && subjectsSection.style.display === 'block') {
+        sessionStorage.setItem('showSubjects', 'true');
+        sessionStorage.removeItem('showErrorBox');
+        sessionStorage.removeItem('showAnswer');
+    }
+}
+
+// Restore state after page refresh
+function restoreState() {
+    const showErrorBox = sessionStorage.getItem('showErrorBox');
+    const showAnswer = sessionStorage.getItem('showAnswer');
+    const showSubjects = sessionStorage.getItem('showSubjects');
+    
+    const errorBox = document.getElementById('pinErrorBox');
+    const subjectsSection = document.getElementById('subjectsSection');
+    const answerSection = document.getElementById('answerSection');
+    
+    // Clear any existing display states first
+    if (subjectsSection) subjectsSection.style.display = 'none';
+    if (errorBox) errorBox.classList.add('hidden');
+    if (answerSection) answerSection.classList.add('hidden');
+    
+    if (showErrorBox === 'true') {
+        // Restore error box
+        if (errorBox) errorBox.classList.remove('hidden');
+        if (subjectsSection) subjectsSection.style.display = 'none';
+        if (answerSection) answerSection.classList.add('hidden');
+    } else if (showAnswer === 'true') {
+        // Restore answer section with saved data
+        const savedAnswerContent = sessionStorage.getItem('savedAnswerContent');
+        const savedAnswerSubject = sessionStorage.getItem('savedAnswerSubject');
+        const savedAnswerPostedBy = sessionStorage.getItem('savedAnswerPostedBy');
+        const savedAnswerPinValue = sessionStorage.getItem('savedAnswerPinValue');
+        
+        if (savedAnswerContent && savedAnswerSubject) {
+            document.getElementById('answerContent').innerHTML = savedAnswerContent;
+            document.getElementById('answerSubjectName').innerHTML = savedAnswerSubject;
+            document.getElementById('answerPostedBy').innerHTML = savedAnswerPostedBy || 'AnswerPoint Team';
+            document.getElementById('answerPinValue').innerHTML = savedAnswerPinValue || '000';
+            if (answerSection) answerSection.classList.remove('hidden');
+            if (subjectsSection) subjectsSection.style.display = 'none';
+            if (errorBox) errorBox.classList.add('hidden');
+        }
+    } else if (showSubjects === 'true') {
+        // Show subjects
+        if (subjectsSection) subjectsSection.style.display = 'block';
+        if (errorBox) errorBox.classList.add('hidden');
+        if (answerSection) answerSection.classList.add('hidden');
+    }
+}
+
 function resetToHomepage() {
     currentAnswerPin = null;
     isLoading = false;
@@ -830,9 +897,15 @@ function resetToHomepage() {
     const errorPinInput = document.getElementById('pinInputError');
     if (errorPinInput) errorPinInput.value = '';
     
+    // Clear all session storage
     sessionStorage.removeItem('current_viewing_pin');
     sessionStorage.removeItem('showErrorBox');
     sessionStorage.removeItem('showAnswer');
+    sessionStorage.removeItem('showSubjects');
+    sessionStorage.removeItem('savedAnswerContent');
+    sessionStorage.removeItem('savedAnswerSubject');
+    sessionStorage.removeItem('savedAnswerPostedBy');
+    sessionStorage.removeItem('savedAnswerPinValue');
     sessionStorage.setItem('showSubjects', 'true');
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -881,12 +954,23 @@ function loadSubjectsFromDB() {
             }
             
             // Only show after FULLY loaded - NO CUTTING
-            subjectsSection.style.display = 'block';
+            // Check if we need to show subjects or restore state
+            const showErrorBox = sessionStorage.getItem('showErrorBox');
+            const showAnswer = sessionStorage.getItem('showAnswer');
+            
+            if (!showErrorBox && !showAnswer) {
+                subjectsSection.style.display = 'block';
+                sessionStorage.setItem('showSubjects', 'true');
+            }
         })
         .catch(error => {
             console.error('Error loading subjects:', error);
             container.innerHTML = '<div class="text-center py-8 text-red-400 col-span-2">Error loading subjects. Please refresh.</div>';
-            subjectsSection.style.display = 'block';
+            const showErrorBox = sessionStorage.getItem('showErrorBox');
+            const showAnswer = sessionStorage.getItem('showAnswer');
+            if (!showErrorBox && !showAnswer) {
+                subjectsSection.style.display = 'block';
+            }
         });
 }
 
@@ -907,6 +991,14 @@ function showTimetable() {
         preloadImages(html);
         answerSection.classList.remove('hidden');
         answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Save state
+        sessionStorage.setItem('showAnswer', 'true');
+        sessionStorage.setItem('savedAnswerContent', html);
+        sessionStorage.setItem('savedAnswerSubject', 'TIMETABLE');
+        sessionStorage.setItem('savedAnswerPostedBy', 'ExamKing Team');
+        sessionStorage.setItem('savedAnswerPinValue', '---');
+        sessionStorage.removeItem('showErrorBox');
+        sessionStorage.removeItem('showSubjects');
     });
 }
 
@@ -947,6 +1039,15 @@ function displayAnswer(data) {
     errorBox.classList.add('hidden');
     answerSection.classList.remove('hidden');
     answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // Save answer state for refresh
+    sessionStorage.setItem('showAnswer', 'true');
+    sessionStorage.setItem('savedAnswerContent', answerHtml);
+    sessionStorage.setItem('savedAnswerSubject', subjectName.toUpperCase());
+    sessionStorage.setItem('savedAnswerPostedBy', postedBy);
+    sessionStorage.setItem('savedAnswerPinValue', pinCode);
+    sessionStorage.removeItem('showErrorBox');
+    sessionStorage.removeItem('showSubjects');
 }
 
 function validateAndGetAnswer(pinInputElement) {
@@ -1000,6 +1101,10 @@ function validateAndGetAnswer(pinInputElement) {
             errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
             pinInputElement.value = '';
             currentAnswerPin = null;
+            // Save error box state for refresh
+            sessionStorage.setItem('showErrorBox', 'true');
+            sessionStorage.removeItem('showAnswer');
+            sessionStorage.removeItem('showSubjects');
         }
     })
     .catch(error => {
@@ -1018,6 +1123,15 @@ function goBackToHomepage() {
     answerSection.classList.add('hidden');
     subjectsSection.style.display = 'block';
     currentAnswerPin = null;
+    
+    // Clear all state, show subjects
+    sessionStorage.removeItem('showErrorBox');
+    sessionStorage.removeItem('showAnswer');
+    sessionStorage.removeItem('savedAnswerContent');
+    sessionStorage.removeItem('savedAnswerSubject');
+    sessionStorage.removeItem('savedAnswerPostedBy');
+    sessionStorage.removeItem('savedAnswerPinValue');
+    sessionStorage.setItem('showSubjects', 'true');
 }
 
 function restrictToNumbers(event) { const input = event.target; input.value = input.value.replace(/[^0-9]/g, ''); }
@@ -1041,6 +1155,12 @@ if (heroEnterPinBtn && headerPin) { heroEnterPinBtn.addEventListener('click', ()
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     loadSubjectsFromDB();
+    restoreState();
+});
+
+// Save state before page refresh
+window.addEventListener('beforeunload', function() {
+    saveCurrentState();
 });
 </script>
 {% endblock %}
