@@ -257,6 +257,7 @@
         line-height: 1.4;
     }
     
+    /* HOT UPDATES - increased by 4px */
     .hotupdates-inner-box {
         background: #fef2f2;
         border: 1px solid #fecaca;
@@ -273,13 +274,13 @@
     
     .hotupdates-header i {
         color: #ef4444;
-        font-size: 18px;
+        font-size: 20px;
     }
     
     .hotupdates-header span {
         color: #dc2626;
         font-weight: 800;
-        font-size: 15px;
+        font-size: 18px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -296,14 +297,14 @@
         display: block;
         color: #2563eb;
         text-decoration: none;
-        font-size: 15px;
+        font-size: 18px;
         font-weight: 600;
     }
     
     .timetable-link i {
         color: #3b82f6;
         margin-right: 8px;
-        font-size: 13px;
+        font-size: 14px;
     }
     
     .timetable-link:hover {
@@ -311,6 +312,7 @@
         text-decoration: underline;
     }
     
+    /* Need Help section - increased by 4px */
     .need-help-section {
         background: #1f2937;
         border-radius: 12px;
@@ -321,14 +323,14 @@
     .need-help-title {
         color: #f59e0b;
         font-weight: 800;
-        font-size: 16px;
+        font-size: 18px;
         margin-bottom: 10px;
         letter-spacing: 0.5px;
     }
     
     .need-help-email {
         color: #f59e0b;
-        font-size: 15px;
+        font-size: 17px;
         font-weight: 600;
         margin-bottom: 8px;
     }
@@ -345,7 +347,7 @@
     
     .need-help-powered {
         color: #f59e0b;
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 600;
         margin-top: 8px;
         padding-top: 8px;
@@ -380,6 +382,7 @@
         gap: 12px;
     }
     
+    /* Social buttons - text increased by 3px, icons increased by 3px */
     .social-btn {
         display: flex;
         align-items: center;
@@ -390,11 +393,11 @@
         transition: all 0.3s;
         text-decoration: none;
         font-weight: 800;
-        font-size: 16px;
+        font-size: 18px;
     }
     
     .social-btn i {
-        font-size: 22px;
+        font-size: 25px;
     }
     
     .whatsapp-btn {
@@ -427,6 +430,7 @@
         background: #166fe5;
     }
     
+    /* VIP Banner - text increased by 3px */
     .vip-banner {
         background: #dc2626;
         padding: 12px;
@@ -438,7 +442,7 @@
     
     .vip-banner p {
         color: white;
-        font-size: 16px;
+        font-size: 18px;
         font-weight: 800;
         margin: 0;
     }
@@ -446,14 +450,14 @@
     .vip-banner small {
         display: block;
         margin-top: 4px;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 600;
         color: #fecaca;
     }
     
-    /* Hero text styles */
+    /* AnswerPoint text - increased by 4px */
     .hero-title {
-        font-size: 22px;
+        font-size: 26px;
         font-weight: 800;
     }
     
@@ -467,7 +471,7 @@
     
     @media (max-width: 640px) {
         .hero-title {
-            font-size: 18px;
+            font-size: 22px;
         }
         
         .hero-subtitle {
@@ -586,14 +590,16 @@
             padding: 10px 12px;
         }
         
+        .hotupdates-header i {
+            font-size: 16px;
+        }
+        
         .hotupdates-header span {
-            font-size: 13px;
-            font-weight: 800;
+            font-size: 14px;
         }
         
         .timetable-link {
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 14px;
         }
         
         .need-help-section {
@@ -601,13 +607,15 @@
         }
         
         .need-help-title {
-            font-size: 14px;
-            font-weight: 800;
+            font-size: 15px;
         }
         
         .need-help-email {
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .need-help-powered {
+            font-size: 12px;
         }
         
         .sticky-bottom .flex {
@@ -629,8 +637,7 @@
         
         .social-btn {
             padding: 10px;
-            font-size: 14px;
-            font-weight: 800;
+            font-size: 15px;
         }
         
         .social-btn i {
@@ -638,13 +645,11 @@
         }
         
         .vip-banner p {
-            font-size: 14px;
-            font-weight: 800;
+            font-size: 15px;
         }
         
         .vip-banner small {
             font-size: 12px;
-            font-weight: 600;
         }
     }
     
@@ -843,7 +848,7 @@
         </div>
     </div>
 
-    <!-- SUBJECTS SECTION -->
+    <!-- SUBJECTS SECTION - Starts HIDDEN to prevent cutting -->
     <div id="subjectsSection" style="display: none;">
         <div class="main-outer-container">
             <div class="main-inner-box">
@@ -1027,6 +1032,7 @@ function loadSubjectsFromDB() {
     const container = document.getElementById('dynamicSubjectsList');
     const subjectsSection = document.getElementById('subjectsSection');
     
+    // CRITICAL: Start HIDDEN to prevent any cutting/partial display
     subjectsSection.style.display = 'none';
     
     fetch('/get_subjects_api')
@@ -1064,6 +1070,7 @@ function loadSubjectsFromDB() {
                 container.innerHTML = '<div class="text-center py-8 text-gray-400 col-span-2">No subjects available.</div>';
             }
             
+            // ONLY show subjects AFTER fully loaded - NO CUTTING
             const showErrorBox = sessionStorage.getItem('showErrorBox');
             const showAnswer = sessionStorage.getItem('showAnswer');
             
@@ -1136,7 +1143,7 @@ function displayAnswer(data) {
     answerPostedBy.innerHTML = postedBy;
     answerPinValue.innerHTML = pinCode;
     
-    // Wrap answer content to force black color - NO spacing changes
+    // Wrap answer content to force black color - preserve images
     if (answerHtml) {
         answerHtml = `<div style="color: #000000;">${answerHtml}</div>`;
     }
