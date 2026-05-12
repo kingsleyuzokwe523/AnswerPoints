@@ -31,7 +31,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        if username == 'admin' and password == 'admin123':
+        if username == 'admin' and password == 'Kelex789590':
             session['admin_logged_in'] = True
             return redirect(url_for('admin.dashboard'))
         return render_template('admin_login.html', error='Invalid credentials')
