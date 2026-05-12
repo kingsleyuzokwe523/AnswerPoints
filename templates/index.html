@@ -7,8 +7,6 @@
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     }
     
-    /* No loading overlay - using browser tab favicon only */
-    
     .answer-text {
         line-height: 1.6;
         word-wrap: break-word;
@@ -600,8 +598,8 @@
         </div>
     </div>
 
-    <!-- SUBJECTS SECTION -->
-    <div id="subjectsSection" style="display: block;">
+    <!-- SUBJECTS SECTION - HIDDEN UNTIL FULLY LOADED -->
+    <div id="subjectsSection" style="display: none;">
         <div class="main-outer-container">
             <div class="main-inner-box">
                 <div class="subjects-header">
@@ -675,6 +673,64 @@ function preloadImages(html) {
     });
 }
 
+// Save current state (error box or subjects) to sessionStorage
+function saveCurrentState() {
+    const errorBox = document.getElementById('pinErrorBox');
+    const subjectsSection = document.getElementById('subjectsSection');
+    const answerSection = document.getElementById('answerSection');
+    
+    if (errorBox && !errorBox.classList.contains('hidden')) {
+        sessionStorage.setItem('showErrorBox', 'true');
+        sessionStorage.removeItem('showSubjects');
+        sessionStorage.removeItem('showAnswer');
+    } else if (answerSection && !answerSection.classList.contains('hidden')) {
+        sessionStorage.setItem('showAnswer', 'true');
+        sessionStorage.removeItem('showErrorBox');
+        sessionStorage.removeItem('showSubjects');
+    } else if (subjectsSection && subjectsSection.style.display === 'block') {
+        sessionStorage.setItem('showSubjects', 'true');
+        sessionStorage.removeItem('showErrorBox');
+        sessionStorage.removeItem('showAnswer');
+    }
+}
+
+// Restore state after page refresh
+function restoreState() {
+    const showErrorBox = sessionStorage.getItem('showErrorBox');
+    const showAnswer = sessionStorage.getItem('showAnswer');
+    const showSubjects = sessionStorage.getItem('showSubjects');
+    
+    const errorBox = document.getElementById('pinErrorBox');
+    const subjectsSection = document.getElementById('subjectsSection');
+    const answerSection = document.getElementById('answerSection');
+    
+    if (showErrorBox === 'true') {
+        if (errorBox) errorBox.classList.remove('hidden');
+        if (subjectsSection) subjectsSection.style.display = 'none';
+        if (answerSection) answerSection.classList.add('hidden');
+    } else if (showAnswer === 'true') {
+        // Restore cached answer if available
+        const savedPin = sessionStorage.getItem('current_viewing_pin');
+        if (savedPin) {
+            const cached = sessionStorage.getItem(`answer_${savedPin}`);
+            if (cached) {
+                try {
+                    const data = JSON.parse(cached);
+                    if (subjectsSection) subjectsSection.style.display = 'none';
+                    if (answerSection) {
+                        displayAnswer(data);
+                        currentAnswerPin = savedPin;
+                    }
+                } catch(e) {}
+            }
+        }
+    } else if (showSubjects === 'true') {
+        if (subjectsSection) subjectsSection.style.display = 'block';
+        if (errorBox) errorBox.classList.add('hidden');
+        if (answerSection) answerSection.classList.add('hidden');
+    }
+}
+
 function resetToHomepage() {
     currentAnswerPin = null;
     isLoading = false;
@@ -704,11 +760,19 @@ function resetToHomepage() {
     if (errorPinInput) errorPinInput.value = '';
     
     sessionStorage.removeItem('current_viewing_pin');
+    sessionStorage.removeItem('showErrorBox');
+    sessionStorage.removeItem('showAnswer');
+    sessionStorage.setItem('showSubjects', 'true');
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function loadSubjectsFromDB() {
     const container = document.getElementById('dynamicSubjectsList');
+    const subjectsSection = document.getElementById('subjectsSection');
+    
+    // Keep subjects hidden until fully loaded
+    subjectsSection.style.display = 'none';
     
     fetch('/get_subjects_api')
         .then(res => res.json())
@@ -744,10 +808,21 @@ function loadSubjectsFromDB() {
             } else {
                 container.innerHTML = '<div class="text-center py-8 text-gray-400 col-span-2">No subjects available.</div>';
             }
+            
+            // Only show subjects if no error box should be shown
+            const showErrorBox = sessionStorage.getItem('showErrorBox');
+            if (!showErrorBox || showErrorBox !== 'true') {
+                subjectsSection.style.display = 'block';
+                sessionStorage.setItem('showSubjects', 'true');
+            }
         })
         .catch(error => {
             console.error('Error loading subjects:', error);
             container.innerHTML = '<div class="text-center py-8 text-red-400 col-span-2">Error loading subjects. Please refresh.</div>';
+            const showErrorBox = sessionStorage.getItem('showErrorBox');
+            if (!showErrorBox || showErrorBox !== 'true') {
+                subjectsSection.style.display = 'block';
+            }
         });
 }
 
@@ -763,6 +838,9 @@ function showTimetable() {
     const subjectsSection = document.getElementById('subjectsSection');
     const answerContent = document.getElementById('answerContent');
     if (subjectsSection) subjectsSection.style.display = 'none';
+    sessionStorage.setItem('showAnswer', 'true');
+    sessionStorage.removeItem('showSubjects');
+    sessionStorage.removeItem('showErrorBox');
     fetch('/get_timetable_html').then(res => res.text()).then(html => {
         answerContent.innerHTML = html;
         preloadImages(html);
@@ -782,6 +860,8 @@ function displayAnswer(data) {
     const answerSubjectName = document.getElementById('answerSubjectName');
     const answerPostedBy = document.getElementById('answerPostedBy');
     const answerPinValue = document.getElementById('answerPinValue');
+    const subjectsSection = document.getElementById('subjectsSection');
+    const errorBox = document.getElementById('pinErrorBox');
     
     const subjectName = data.subject_name || data.subject || 'Unknown';
     const postedBy = data.posted_by || 'AnswerPoint Team';
@@ -802,8 +882,16 @@ function displayAnswer(data) {
     answerContent.innerHTML = answerHtml;
     preloadImages(answerHtml);
     
+    // Hide subjects and error box, show answer
+    subjectsSection.style.display = 'none';
+    errorBox.classList.add('hidden');
     answerSection.classList.remove('hidden');
     answerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // Save state
+    sessionStorage.setItem('showAnswer', 'true');
+    sessionStorage.removeItem('showSubjects');
+    sessionStorage.removeItem('showErrorBox');
 }
 
 function validateAndGetAnswer(pinInputElement) {
@@ -825,18 +913,16 @@ function validateAndGetAnswer(pinInputElement) {
     const subjectsSection = document.getElementById('subjectsSection');
     const errorBox = document.getElementById('pinErrorBox');
 
-    // Hide error box if showing
-    if (errorBox) errorBox.classList.add('hidden');
-
     if (answerCache.has(pinCode)) {
         // Hide subjects, show answer
         subjectsSection.style.display = 'none';
+        errorBox.classList.add('hidden');
         displayAnswer(answerCache.get(pinCode));
         currentAnswerPin = pinCode;
         return;
     }
 
-    // NO loading spinner/text anywhere - page stays exactly as is
+    // NO loading spinner - page stays exactly as is
     isLoading = true;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -853,18 +939,25 @@ function validateAndGetAnswer(pinInputElement) {
         if (data.success) {
             // PIN correct - hide subjects, show answer
             subjectsSection.style.display = 'none';
+            errorBox.classList.add('hidden');
             data.pin_code = pinCode;
             answerCache.set(pinCode, data);
             try { sessionStorage.setItem(`answer_${pinCode}`, JSON.stringify(data)); sessionStorage.setItem('current_viewing_pin', pinCode); } catch(e) {}
             currentAnswerPin = pinCode;
             displayAnswer(data);
         } else {
-            // PIN incorrect - show error box, keep subjects visible
+            // PIN incorrect - show error box, HIDE SUBJECTS
+            subjectsSection.style.display = 'none';
+            answerSection.classList.add('hidden');
             errorBox.classList.remove('hidden');
             errorBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
             pinInputElement.value = '';
             currentAnswerPin = null;
             sessionStorage.removeItem('current_viewing_pin');
+            // Save error box state for refresh
+            sessionStorage.setItem('showErrorBox', 'true');
+            sessionStorage.removeItem('showSubjects');
+            sessionStorage.removeItem('showAnswer');
         }
     })
     .catch(error => {
@@ -878,27 +971,16 @@ function goBackToHomepage() {
     const errorBox = document.getElementById('pinErrorBox');
     const subjectsSection = document.getElementById('subjectsSection');
     const answerSection = document.getElementById('answerSection');
-    if (errorBox) errorBox.classList.add('hidden');
-    if (answerSection) answerSection.classList.add('hidden');
-    if (subjectsSection) subjectsSection.style.display = 'block';
+    
+    errorBox.classList.add('hidden');
+    answerSection.classList.add('hidden');
+    subjectsSection.style.display = 'block';
     currentAnswerPin = null;
+    
     sessionStorage.removeItem('current_viewing_pin');
-}
-
-function restoreCachedAnswer() {
-    const savedPin = sessionStorage.getItem('current_viewing_pin');
-    if (savedPin) {
-        const cached = sessionStorage.getItem(`answer_${savedPin}`);
-        if (cached) {
-            try {
-                const data = JSON.parse(cached);
-                const subjectsSection = document.getElementById('subjectsSection');
-                const answerSection = document.getElementById('answerSection');
-                if (subjectsSection) subjectsSection.style.display = 'none';
-                if (answerSection) { displayAnswer(data); currentAnswerPin = savedPin; }
-            } catch(e) {}
-        }
-    }
+    sessionStorage.removeItem('showErrorBox');
+    sessionStorage.removeItem('showAnswer');
+    sessionStorage.setItem('showSubjects', 'true');
 }
 
 function restrictToNumbers(event) { const input = event.target; input.value = input.value.replace(/[^0-9]/g, ''); }
@@ -919,10 +1001,17 @@ if (footerViewBtn && footerPin) { footerPin.addEventListener('input', restrictTo
 const heroEnterPinBtn = document.getElementById('heroEnterPinBtn');
 if (heroEnterPinBtn && headerPin) { heroEnterPinBtn.addEventListener('click', () => { headerPin.focus(); headerPin.scrollIntoView({ behavior: 'smooth', block: 'center' }); }); }
 
-// Initialize
+// Initialize - subjects hidden until fully loaded
 document.addEventListener('DOMContentLoaded', function() {
+    const subjectsSection = document.getElementById('subjectsSection');
+    subjectsSection.style.display = 'none';
     loadSubjectsFromDB();
-    restoreCachedAnswer();
+    restoreState();
+});
+
+// Save state before page refresh
+window.addEventListener('beforeunload', function() {
+    saveCurrentState();
 });
 </script>
 {% endblock %}
