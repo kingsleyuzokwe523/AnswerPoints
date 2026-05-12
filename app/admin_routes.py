@@ -62,7 +62,7 @@ def index():
 @admin_required
 def get_home_content():
     sections = ['hero_title', 'hero_text', 'moving_tagline', 'whatsapp_link',
-                'telegram_link', 'vip_text', 'vip_number', 'need_help_text',
+                'telegram_link', 'facebook_link', 'vip_text', 'vip_number', 'need_help_text',
                 'support_email', 'footer_text']
     content = {}
     for section in sections:
@@ -182,7 +182,7 @@ def delete_subject(id):
 
 # ==================== PIN MANAGEMENT ====================
 def save_base64_image(base64_data, pin_id):
-    """Save base64 image to disk and return path"""
+    """Save base64 image to disk and return path - images NEVER expire"""
     try:
         # Extract the base64 data (remove data:image/png;base64, prefix)
         if ',' in base64_data:
@@ -193,10 +193,11 @@ def save_base64_image(base64_data, pin_id):
         # Decode base64
         image_data = base64.b64decode(base64_string)
 
-        # Generate unique filename
-        filename = f"pin_{pin_id}_{uuid.uuid4().hex[:8]}.png"
+        # Generate unique filename with timestamp to avoid conflicts
+        timestamp = int(time.time())
+        filename = f"pin_{pin_id}_{timestamp}_{uuid.uuid4().hex[:8]}.png"
 
-        # Ensure upload directory exists - FIXED PATH
+        # Ensure upload directory exists
         upload_dir = os.path.join('app/static/uploads/pins')
         os.makedirs(upload_dir, exist_ok=True)
 
@@ -205,14 +206,14 @@ def save_base64_image(base64_data, pin_id):
         with open(filepath, 'wb') as f:
             f.write(image_data)
 
-        # Return CORRECT path for database (with /static/)
-        return f'/static/uploads/pins/{filename}'  # FIXED: Added /static/
+        # Return path for database (with /static/)
+        return f'/static/uploads/pins/{filename}'
     except Exception as e:
         print(f"Error saving image: {str(e)}")
         return None
 
 def extract_and_save_images(html_content, pin_id):
-    """Extract base64 images from HTML and save them as files"""
+    """Extract base64 images from HTML and save them as files - images stay forever"""
     # Find all base64 images in the HTML
     pattern = r'src="(data:image/[^;]+;base64,[^"]+)"'
     matches = re.findall(pattern, html_content)
@@ -222,8 +223,8 @@ def extract_and_save_images(html_content, pin_id):
         saved_path = save_base64_image(base64_img, pin_id)
         if saved_path:
             saved_paths.append(saved_path)
-            # Replace base64 with FULL file path in HTML
-            html_content = html_content.replace(base64_img, saved_path)  # FIXED: Use full path directly
+            # Replace base64 with file path in HTML
+            html_content = html_content.replace(base64_img, saved_path)
 
     return html_content, saved_paths
 
@@ -317,7 +318,7 @@ def create_pin_simple():
         if existing:
             return jsonify({'success': False, 'message': f'PIN {pin_code} already exists!'})
 
-        # Create PIN - NO subject_id being set!
+        # Create PIN
         pin = Pin(
             pin_code=pin_code,
             subject_name=subject_name,
@@ -331,7 +332,7 @@ def create_pin_simple():
         db.session.add(pin)
         db.session.flush()
 
-        # Extract and save images from answer_text
+        # Extract and save images from answer_text (images stay forever)
         processed_html, saved_images = extract_and_save_images(answer_text, pin.id)
         pin.answer_text = processed_html
 
@@ -352,6 +353,7 @@ def create_pin_simple():
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
 
+
 @admin_bp.route('/update_pin_full', methods=['POST'])
 @admin_required
 def update_pin_full():
@@ -371,13 +373,26 @@ def update_pin_full():
 
         answer_text = request.form.get('answer_text', pin.answer_text)
 
-        # Extract and save new images
-        processed_html, saved_images = extract_and_save_images(answer_text, pin.id)
-        pin.answer_text = processed_html
-
-        # Save new image records (NO file_name)
-        for img_path in saved_images:
-            # Check if image already exists
+        # Extract and save NEW images only (existing images from database stay)
+        new_html = answer_text
+        
+        # Find all base64 images in the HTML (these are new images that need saving)
+        pattern = r'src="(data:image/[^;]+;base64,[^"]+)"'
+        matches = re.findall(pattern, new_html)
+        
+        saved_paths = []
+        for base64_img in matches:
+            saved_path = save_base64_image(base64_img, pin.id)
+            if saved_path:
+                saved_paths.append(saved_path)
+                new_html = new_html.replace(base64_img, saved_path)
+        
+        # Update the answer text with saved image paths
+        pin.answer_text = new_html
+        
+        # Save new image records (existing ones remain)
+        for img_path in saved_paths:
+            # Only add if not already exists
             existing = Image.query.filter_by(pin_id=pin.id, image_path=img_path).first()
             if not existing:
                 image = Image(
@@ -385,7 +400,9 @@ def update_pin_full():
                     image_path=img_path
                 )
                 db.session.add(image)
-
+        
+        # IMPORTANT: Do NOT delete old images - they stay forever in the database and filesystem
+        
         db.session.commit()
         return jsonify({'success': True, 'message': 'PIN updated successfully!'})
 
@@ -400,7 +417,7 @@ def update_pin_full():
 def delete_pin(id):
     pin = Pin.query.get_or_404(id)
 
-    # Delete associated image files
+    # Delete associated image files ONLY when pin is deleted
     for img in pin.images:
         if img.image_path:
             filepath = os.path.join('app/static', img.image_path)
