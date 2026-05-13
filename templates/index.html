@@ -913,7 +913,6 @@
     </div>
 </div>
 
-
 <script>
 let currentAnswerPin = null;
 let isLoading = false;
@@ -932,19 +931,6 @@ function preloadImages(html) {
             preloadImg.src = src;
         }
     });
-}
-
-// ==================== HARD REFRESH - Clears everything and reloads fresh ====================
-function hardRefresh() {
-    // Clear answer cache
-    answerCache.clear();
-    // Clear session storage
-    sessionStorage.clear();
-    // Clear memory variables
-    currentAnswerPin = null;
-    isLoading = false;
-    // Force reload from server (bypass browser cache)
-    window.location.reload(true);
 }
 
 function saveCurrentState() {
@@ -981,6 +967,8 @@ function restoreState() {
     const showErrorBox = sessionStorage.getItem('showErrorBox');
     const showAnswer = sessionStorage.getItem('showAnswer');
     const showSubjects = sessionStorage.getItem('showSubjects');
+    const autoLoadPin = sessionStorage.getItem('auto_load_pin');
+    const refreshPin = sessionStorage.getItem('refresh_pin');
     
     const errorBox = document.getElementById('pinErrorBox');
     const subjectsSection = document.getElementById('subjectsSection');
@@ -993,6 +981,42 @@ function restoreState() {
     if (errorBox) errorBox.classList.add('hidden');
     if (answerSection) answerSection.classList.add('hidden');
     
+    // Handle auto-load from refresh button - fetches updated answer from server
+    if (autoLoadPin === 'true' && refreshPin) {
+        sessionStorage.removeItem('auto_load_pin');
+        sessionStorage.removeItem('refresh_pin');
+        // Auto-fetch the updated answer for the PIN
+        fetch('/get_answer', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'pin_code=' + refreshPin
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                data.pin_code = refreshPin;
+                answerCache.set(refreshPin, data);
+                currentAnswerPin = refreshPin;
+                displayAnswer(data);
+            } else {
+                // PIN no longer exists or error - show subjects
+                if (subjectsSection) {
+                    subjectsSection.style.display = 'block';
+                    subjectsSection.style.visibility = 'visible';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error auto-loading PIN:', error);
+            if (subjectsSection) {
+                subjectsSection.style.display = 'block';
+                subjectsSection.style.visibility = 'visible';
+            }
+        });
+        return;
+    }
+    
+    // Regular restore logic
     if (showErrorBox === 'true') {
         if (errorBox) errorBox.classList.remove('hidden');
         if (subjectsSection) {
@@ -1179,7 +1203,6 @@ function displayAnswer(data) {
     answerPostedBy.innerHTML = postedBy;
     answerPinValue.innerHTML = pinCode;
     
-    // Apply text color from admin - NO forced black
     if (answerHtml) {
         answerHtml = `<div style="color: ${textColor};">${answerHtml}</div>`;
     }
@@ -1300,19 +1323,24 @@ if (footerViewBtn && footerPin) { footerPin.addEventListener('input', restrictTo
 const heroEnterPinBtn = document.getElementById('heroEnterPinBtn');
 if (heroEnterPinBtn && headerPin) { heroEnterPinBtn.addEventListener('click', () => { headerPin.focus(); headerPin.scrollIntoView({ behavior: 'smooth', block: 'center' }); }); }
 
-// ==================== REFRESH BUTTON - Clears everything and reloads fresh ====================
+// ==================== REFRESH BUTTON - Clears cache and reloads with updated answer ====================
 const refreshBtn = document.getElementById('refreshPageBtn');
 if (refreshBtn) {
-    // Remove existing event listeners
     const newRefreshBtn = refreshBtn.cloneNode(true);
     refreshBtn.parentNode.replaceChild(newRefreshBtn, refreshBtn);
-    // Add fresh event listener
     newRefreshBtn.addEventListener('click', function() {
-        // Clear all caches
+        // Get the currently viewed PIN
+        const currentPin = currentAnswerPin;
+        
+        // Clear answer cache
         answerCache.clear();
-        sessionStorage.clear();
-        currentAnswerPin = null;
-        isLoading = false;
+        
+        // If there's a PIN being viewed, save it to reload after refresh
+        if (currentPin) {
+            sessionStorage.setItem('refresh_pin', currentPin);
+            sessionStorage.setItem('auto_load_pin', 'true');
+        }
+        
         // Force reload from server
         window.location.reload(true);
     });
@@ -1328,4 +1356,3 @@ window.addEventListener('beforeunload', function() {
     saveCurrentState();
 });
 </script>
-{% endblock %}
