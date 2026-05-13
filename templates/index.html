@@ -1324,6 +1324,7 @@ const heroEnterPinBtn = document.getElementById('heroEnterPinBtn');
 if (heroEnterPinBtn && headerPin) { heroEnterPinBtn.addEventListener('click', () => { headerPin.focus(); headerPin.scrollIntoView({ behavior: 'smooth', block: 'center' }); }); }
 
 // ==================== REFRESH BUTTON - Clears cache and reloads with updated answer ====================
+// ==================== REFRESH BUTTON - Clears cache and reloads with updated answer ====================
 const refreshBtn = document.getElementById('refreshPageBtn');
 if (refreshBtn) {
     const newRefreshBtn = refreshBtn.cloneNode(true);
@@ -1332,20 +1333,29 @@ if (refreshBtn) {
         // Get the currently viewed PIN
         const currentPin = currentAnswerPin;
         
-        // Clear answer cache
+        // CRITICAL FIX: Clear the specific cached answer for the current PIN
+        if (currentPin && answerCache.has(currentPin)) {
+            answerCache.delete(currentPin);
+        }
+        
+        // Also clear any other cached answers to be safe
+        // (optional - remove this line if you want to keep other PINs cached)
         answerCache.clear();
         
         // If there's a PIN being viewed, save it to reload after refresh
         if (currentPin) {
             sessionStorage.setItem('refresh_pin', currentPin);
             sessionStorage.setItem('auto_load_pin', 'true');
+        } else {
+            // If no PIN is being viewed, just reload normally
+            sessionStorage.removeItem('refresh_pin');
+            sessionStorage.removeItem('auto_load_pin');
         }
         
-        // Force reload from server
+        // Force reload from server (bypass browser cache)
         window.location.reload(true);
     });
 }
-
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     loadSubjectsFromDB();
