@@ -3,6 +3,53 @@ from app import db
 from app.models import Subject, Pin, Image, HomeContent, ExamTimetable, SiteSettings
 import os
 import re
+from flask import Blueprint, render_template, request, abort, current_app
+from functools import wraps
+import time
+from collections import defaultdict
+import re
+
+# Rate limiting setup
+request_history = defaultdict(list)
+BLOCKED_IPS = set()
+BLOCKED_USER_AGENTS = [
+    r'Chrome/14[89]\.',  # Blocks Chrome 148, 149
+    r'OPR/99\.',
+    r'UptimeRobot',
+]
+
+def is_bot(user_agent):
+    """Check if user agent is a known bot"""
+    if not user_agent:
+        return True
+    for pattern in BLOCKED_USER_AGENTS:
+        if re.search(pattern, user_agent):
+            return True
+    return False
+
+# This is the key - use @main_bp.before_request (not @app.before_request)
+@main_bp.before_request
+def block_bots_and_rate_limit():
+    """Block bots and rate limit requests"""
+    # Block bots by User-Agent
+    user_agent = request.headers.get('User-Agent', '')
+    if is_bot(user_agent):
+        print(f"🚫 Blocked bot: {user_agent[:50]}...")
+        abort(403)  # Forbidden
+    
+    # Rate limit by IP
+    ip = request.remote_addr
+    now = time.time()
+    
+    # Clean old requests (keep last 60 seconds)
+    request_history[ip] = [t for t in request_history[ip] if now - t < 60]
+    
+    # Allow max 30 requests per minute per IP
+    if len(request_history[ip]) >= 30:
+        print(f"⛔ Rate limit exceeded for IP: {ip}")
+        abort(429)  # Too Many Requests
+    
+    request_history[ip].append(now)
 
 # ==================== BLUEPRINT INITIALIZATION ====================
 main_bp = Blueprint('main', __name__)
