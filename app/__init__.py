@@ -38,7 +38,15 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
     
     db.init_app(app)
-    
+    # Add this after db.init_app(app)
+@app.before_request
+def global_bot_block():
+    """Global bot blocking for ALL routes"""
+    user_agent = request.headers.get('User-Agent', '')
+    blocked = ['Chrome/148', 'Chrome/149', 'OPR/99', 'UptimeRobot']
+    if any(bot in user_agent for bot in blocked):
+        print(f"🚫 Global block: {user_agent[:50]}...")
+        abort(403)
     from app.routes import main_bp
     from app.admin_routes import admin_bp
     
